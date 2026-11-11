@@ -33,5 +33,5 @@ jobs:
       contents: write
     with:
       scan: full
-      limit: ${{ inputs.limit || 0 }}
+      limit: ${{ fromJSON(format('{0}', inputs.limit || 0)) }}
       publish: ${{ github.event_name == 'schedule' || inputs.publish }}
