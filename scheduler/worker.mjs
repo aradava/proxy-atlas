@@ -106,7 +106,7 @@ async function runManualTest(request, env, origin) {
   try {
     const result = await dispatchWorkflow(workflow, env.GITHUB_ACTIONS_TOKEN, {
       automation: false,
-      publish: false,
+      publish: true,
     });
     if (!result.ok) {
       return json({
@@ -321,7 +321,7 @@ function dashboard(nonce, manualEnabled) {
         </div>
       </form>
     </main>
-    <footer>نتیجهٔ تست دستی در GitHub Actions قابل مشاهده است و در فهرست عمومی منتشر نمی‌شود.</footer>
+    <footer>نتیجهٔ تست دستی در فهرست عمومی پروکسی‌ها در GitHub منتشر می‌شود.</footer>
   </div>
   <script nonce="${nonce}">
     const form = document.querySelector("#test-form");

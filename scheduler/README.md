@@ -10,7 +10,7 @@ Worker از API گیت‌هاب دو اکشن موجود را فراخوانی �
 2. در **Settings → Variables and Secrets** یک مقدار از نوع **Secret** با نام `MANUAL_TEST_PASSWORD` بسازید. در **Value** یک رمز تصادفی و بلند وارد کنید. توکن GitHub در Secret فعلی `GITHUB_ACTIONS_TOKEN` می‌ماند. [مدیریت Secret در Cloudflare](https://developers.cloudflare.com/workers/configuration/secrets/#via-the-dashboard)
 3. آدرس `workers.dev` همان Worker را باز کنید، رمز تست دستی را وارد کنید و **اجرای بازتست** را بزنید. صفحه بعد از پذیرش درخواست، لینک اجرای GitHub را نشان می‌دهد. دکمهٔ **اجرای تست کامل** همهٔ نامزدها را بررسی می‌کند.
 
-هر دو تست دستی در صف مشترک GitHub اجرا می‌شوند و نتیجهٔ آزمایشی در فهرست عمومی منتشر نمی‌شود.
+هر دو تست دستی در صف مشترک GitHub اجرا می‌شوند و پس از موفقیت، نتیجهٔ آن‌ها در فهرست عمومی پروکسی‌ها منتشر می‌شود.
 
 ## راه‌اندازی با Wrangler
 
