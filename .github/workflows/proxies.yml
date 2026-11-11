@@ -2,7 +2,7 @@ name: به‌روزرسانی پروکسی‌ها
 
 on:
   schedule:
-    - cron: '17 */2 * * *'
+    - cron: '6 */2 * * *'
   workflow_dispatch:
     inputs:
       limit:
