@@ -12,6 +12,9 @@ on:
       publish:
         type: boolean
         required: true
+      skip_fresh:
+        type: boolean
+        default: false
 
 permissions: {}
 
@@ -46,9 +49,10 @@ jobs:
         env:
           PROXY_LIMIT: ${{ inputs.limit }}
           SCAN_MODE: ${{ inputs.scan }}
+          SKIP_FRESH: ${{ inputs.skip_fresh }}
         run: |
           options=()
-          if [[ "$SCAN_MODE" == recheck && "$GITHUB_EVENT_NAME" == schedule ]]; then
+          if [[ "$SCAN_MODE" == recheck && "$SKIP_FRESH" == true ]]; then
             options+=(--skip-fresh)
           fi
           python3 actions_pipeline.py prepare "$RUNNER_TEMP/prox-plan" \

@@ -1,4 +1,5 @@
 name: به‌روزرسانی پروکسی‌ها
+run-name: ${{ inputs.automation && 'تست کامل · Cloudflare' || 'به‌روزرسانی پروکسی‌ها' }}
 
 on:
   schedule:
@@ -13,6 +14,10 @@ on:
         description: ثبت خروجی در شاخهٔ اصلی مخزن
         type: boolean
         default: true
+      automation:
+        description: فراخوانی از زمان‌بند Cloudflare
+        type: boolean
+        default: false
 
 permissions: {}
 
