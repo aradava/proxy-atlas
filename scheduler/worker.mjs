@@ -138,7 +138,7 @@ async function dispatchWorkflow(workflow, token, { automation, publish }) {
   const url = `https://api.github.com/repos/${repository}/actions/workflows/${workflow.file}/dispatches`;
   const response = await fetch(url, {
     method: "POST",
-    redirect: "error",
+    redirect: "manual",
     signal: AbortSignal.timeout(15_000),
     headers: {
       "Accept": "application/vnd.github+json",
