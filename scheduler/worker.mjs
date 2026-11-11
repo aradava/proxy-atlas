@@ -58,7 +58,8 @@ export default {
       publish: true,
     });
     if (!result.ok) {
-      throw new Error(`GitHub rejected ${workflow.file} with HTTP ${result.status}`);
+      const detail = result.message ? `: ${result.message}` : "";
+      throw new Error(`GitHub rejected ${workflow.file} with HTTP ${result.status}${detail}`);
     }
 
     console.log(JSON.stringify({
@@ -109,7 +110,7 @@ async function runManualTest(request, env, origin) {
     });
     if (!result.ok) {
       return json({
-        message: `گیت‌هاب درخواست را رد کرد (HTTP ${result.status}).`,
+        message: `گیت‌هاب درخواست را رد کرد (HTTP ${result.status}).${result.message ? " " + result.message : ""}`,
         runUrl: workflowUrl,
       }, 502);
     }
@@ -136,6 +137,10 @@ async function runManualTest(request, env, origin) {
 
 async function dispatchWorkflow(workflow, token, { automation, publish }) {
   const url = `https://api.github.com/repos/${repository}/actions/workflows/${workflow.file}/dispatches`;
+  const inputs = Object.fromEntries(
+    Object.entries({ ...workflow.inputs, automation, publish })
+      .map(([name, value]) => [name, String(value)]),
+  );
   const response = await fetch(url, {
     method: "POST",
     redirect: "manual",
@@ -147,14 +152,17 @@ async function dispatchWorkflow(workflow, token, { automation, publish }) {
       "User-Agent": "ProxyAtlas-Scheduler",
       "X-GitHub-Api-Version": "2026-03-10",
     },
-    body: JSON.stringify({
-      ref: "main",
-      inputs: { ...workflow.inputs, automation, publish },
-    }),
+    body: JSON.stringify({ ref: "main", inputs }),
   });
 
   if (!response.ok) {
-    return { ok: false, status: response.status };
+    const error = await response.json().catch(() => null);
+    const message = [error?.message, error?.errors?.[0]?.message]
+      .filter((value) => typeof value === "string")
+      .join(" ")
+      .replaceAll(token, "[redacted]")
+      .slice(0, 500);
+    return { ok: false, status: response.status, message };
   }
 
   const details = response.status === 200 ? await response.json().catch(() => null) : null;
