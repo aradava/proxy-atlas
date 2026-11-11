@@ -21,7 +21,7 @@ def prepare(args):
         raise ValueError("مقدار limit باید نامنفی باشد")
     prox.require_curl()
     started = datetime.now(timezone.utc)
-    publishers, candidates, source_stats = prox.collect(prox.load_feeds(args.sources))
+    publishers, candidates, collection_stats = prox.collect(prox.load_feeds(args.sources), args.previous)
     selected = prox.select_candidates(publishers, candidates, args.limit, started)
     shard_count = min(ceil(len(selected) / TARGET_SHARD_SIZE), MAX_MATRIX_JOBS)
 
@@ -39,8 +39,7 @@ def prepare(args):
         "manifest": {
             "started_at_utc": started.isoformat(timespec="seconds"),
             "country_database": {"source": database_source, "credit": "IP Geolocation by DB-IP"},
-            "discovered_candidates": len(candidates),
-            "sources": source_stats,
+            **collection_stats,
         },
     })
     with args.github_output.open("a", encoding="utf-8") as file:
@@ -103,6 +102,7 @@ def main():
     prepare_parser = stages.add_parser("prepare")
     prepare_parser.add_argument("plan", type=Path)
     prepare_parser.add_argument("--sources", type=Path, default=Path(__file__).with_name("sources.json"))
+    prepare_parser.add_argument("--previous", type=Path)
     prepare_parser.add_argument("--limit", type=int, default=0)
     prepare_parser.add_argument("--github-output", required=True, type=Path)
     prepare_parser.set_defaults(stage=prepare)

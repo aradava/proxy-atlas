@@ -198,7 +198,22 @@ def fetch_feed(feed):
         return feed, [], str(error) if not isinstance(error, subprocess.TimeoutExpired) else "download timed out"
 
 
-def collect(feeds):
+def read_previous_candidates(path):
+    previous = {}
+    if path is None:
+        return previous
+    try:
+        with path.open(encoding="utf-8-sig") as file:
+            for line in file:
+                proxy = parse_proxy(line.strip())
+                if proxy is not None:
+                    previous[proxy] = None
+    except FileNotFoundError:
+        pass
+    return previous
+
+
+def collect(feeds, previous_file=None):
     by_publisher = defaultdict(dict)
     source_stats = []
     with ThreadPoolExecutor(max_workers=12) as executor:
@@ -208,9 +223,19 @@ def collect(feeds):
             status = f"خطا: {error}" if error else f"{len(proxies):,} نامزد"
             print(f"{feed.publisher}: {status} ({feed.url})", flush=True)
     candidates = set().union(*by_publisher.values())
+    previous = read_previous_candidates(previous_file)
+    previous_only = {proxy: None for proxy in previous if proxy not in candidates}
+    if previous_only:
+        by_publisher[None] = previous_only
+        candidates.update(previous_only)
     if not candidates:
-        raise ValueError("هیچ پروکسی عمومی معتبری از منابع دریافت نشد")
-    return by_publisher, candidates, source_stats
+        raise ValueError("هیچ پروکسی عمومی معتبری از فیدها یا خروجی قبلی پیدا نشد")
+    return by_publisher, candidates, {
+        "discovered_candidates": len(candidates),
+        "previous_candidates": len(previous),
+        "previous_only_candidates": len(previous_only),
+        "sources": source_stats,
+    }
 
 
 def select_candidates(by_publisher, candidates, limit, started):
@@ -423,7 +448,7 @@ def main():
         feeds = load_feeds(args.sources)
         check_targets(args.timeout)
         database, database_source = load_country_database(started, args.country_db)
-        by_publisher, candidates, source_stats = collect(feeds)
+        by_publisher, candidates, collection_stats = collect(feeds, args.output / "all.txt")
         selected = select_candidates(by_publisher, candidates, args.limit, started)
         print(f"بررسی {len(selected):,} از {len(candidates):,} نامزد یکتا", flush=True)
         checks = check_all(selected, args.workers, args.timeout, database)
@@ -433,9 +458,8 @@ def main():
             "started_at_utc": started.isoformat(timespec="seconds"),
             "finished_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             "country_database": {"source": database_source, "credit": "IP Geolocation by DB-IP"},
-            "discovered_candidates": len(candidates),
             "tested_candidates": len(selected),
-            "sources": source_stats,
+            **collection_stats,
         })
     except (ValueError, OSError, EOFError, KeyError, TypeError, subprocess.SubprocessError) as error:
         parser.exit(1, f"Prox: {error}\n")

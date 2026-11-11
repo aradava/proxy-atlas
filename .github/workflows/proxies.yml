@@ -34,12 +34,23 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: دریافت سالم‌های آخرین انتشار
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: refs/heads/${{ github.event.repository.default_branch }}
+          path: .prox-previous
+          sparse-checkout: |
+            /results/all.txt
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+
       - name: آماده‌سازی فهرست تست
         id: plan
         env:
           PROXY_LIMIT: ${{ inputs.limit }}
         run: |
           python3 actions_pipeline.py prepare "$RUNNER_TEMP/prox-plan" \
+            --previous "$GITHUB_WORKSPACE/.prox-previous/results/all.txt" \
             --limit "${PROXY_LIMIT:-0}" --github-output "$GITHUB_OUTPUT"
 
       - name: ذخیرهٔ فهرست تست
@@ -125,6 +136,8 @@ jobs:
           data = json.loads((Path(os.environ['RUNNER_TEMP']) / 'prox-results/manifest.json').read_text())
           print('## نتیجهٔ بررسی')
           print(f"- نامزدهای یکتا: {data['discovered_candidates']:,}")
+          print(f"- نامزدها از سالم‌های آخرین انتشار: {data['previous_candidates']:,}")
+          print(f"- نامزدهایی که فقط در آخرین انتشار بودند: {data['previous_only_candidates']:,}")
           print(f"- نامزدهای تست‌شده: {data['tested_candidates']:,}")
           print(f"- پروکسی‌های سالم: {data['working_proxies']:,}")
           print(f"- گروه‌های جغرافیایی: {len(data['countries'])}")
