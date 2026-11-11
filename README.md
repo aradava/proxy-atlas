@@ -1,85 +1,79 @@
-<div dir="rtl">
+<p align="center">
+  <img src=".github/assets/proxy-atlas.webp" alt="نقشهٔ جهان با نقاط و مسیرهای شبکه" width="100%">
+</p>
 
-# پروکس
+<h1 align="center">ProxyAtlas · اطلس پروکسی</h1>
 
-پروکس از **۱۲۸ فید عمومی متعلق به ۴۴ منتشرکننده** فهرست پروکسی می‌گیرد، موارد تکراری را حذف می‌کند و به‌صورت پیش‌فرض همهٔ نامزدهای یکتا را با درخواست واقعی روی GitHub Actions می‌سنجد. خروجی هر اجرا به تفکیک کشورِ IP خروجی و پروتکل ذخیره می‌شود. فهرست منابع در [`sources.json`](sources.json) قابل ویرایش است.
+<p align="center" dir="rtl">فهرست به‌روز پروکسی‌های عمومی، تست‌شده با درخواست واقعی و مرتب‌شده بر اساس کشورِ IP خروجی</p>
 
-## راه‌اندازی در GitHub
+<p align="center">
+  <a href="https://github.com/aradava/proxy-atlas/actions/workflows/proxies.yml"><img src="https://github.com/aradava/proxy-atlas/actions/workflows/proxies.yml/badge.svg?branch=main" alt="وضعیت GitHub Actions"></a>
+  <a href="results/manifest.json"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Faradava%2Fproxy-atlas%2Fmain%2Fresults%2Fmanifest.json&amp;query=%24.working_proxies&amp;label=%D8%B3%D8%A7%D9%84%D9%85&amp;color=0D9488&amp;labelColor=0B2137&amp;style=flat-square" alt="شمار پروکسی‌های سالم در آخرین انتشار"></a>
+  <a href="results/manifest.json"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Faradava%2Fproxy-atlas%2Fmain%2Fresults%2Fmanifest.json&amp;query=%24.tested_candidates&amp;label=%D8%AA%D8%B3%D8%AA%E2%80%8C%D8%B4%D8%AF%D9%87&amp;color=156F9E&amp;labelColor=0B2137&amp;style=flat-square" alt="شمار نامزدهای تست‌شده در آخرین انتشار"></a>
+</p>
 
-1. یک مخزن خالی در GitHub بسازید و فایل‌های این پروژه را با دستورهای پایین به آن بفرستید. به‌جای `OWNER` و `REPO` نام حساب و مخزن خودتان را بگذارید.
-2. در مخزن به **Actions → به‌روزرسانی پروکسی‌ها → Run workflow** بروید و شاخهٔ پیش‌فرض را انتخاب کنید. برای تست اولیه می‌توانید `limit` را روی `200` بگذارید و `publish` را خاموش کنید. فایل‌ها در بخش **Artifacts** همان اجرا قابل دانلود هستند.
-3. برای بررسی همهٔ نامزدها و انتشار فهرست در مخزن، با `limit=0` و گزینهٔ `publish` روشن اجرا کنید. اجرای زمان‌بندی‌شده هم همهٔ نامزدها را هر دو ساعت، در دقیقهٔ ۴۷ به وقت تهران، بررسی می‌کند. اگر قوانین شاخه جلوی ثبت خودکار را بگیرند، فایل `proxy-results` در **Artifacts** همان اجرا در دسترس است. [راهنمای اجرای زمان‌بندی‌شدهٔ GitHub](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule)
-
-GitHub Actions فهرست را بر اساس اندازه‌اش بین کارهای موازی تقسیم می‌کند و پس از دریافت نتیجهٔ همهٔ بخش‌ها، خروجی کامل را می‌سازد. مدت اجرا به تعداد نامزدها و ظرفیت رانرها بستگی دارد. [محدودیت‌های GitHub Actions](https://docs.github.com/en/actions/reference/limits)
-
-</div>
-
-```bash
-git add README.md prox.py actions_pipeline.py sources.json .gitignore .github/workflows/proxies.yml
-git commit -m "Add proxy collector and checker"
-git branch -M main
-git remote add origin https://github.com/OWNER/REPO.git
-git push -u origin main
-```
+<p align="center" dir="rtl">
+  <a href="https://raw.githubusercontent.com/aradava/proxy-atlas/main/results/all.txt"><strong>↓ دریافت فهرست کامل</strong></a>
+  &nbsp;·&nbsp;
+  <a href="results/countries"><strong>مرور کشورها</strong></a>
+  &nbsp;·&nbsp;
+  <a href="https://github.com/aradava/proxy-atlas/actions/workflows/proxies.yml">مشاهدهٔ اجراها</a>
+</p>
 
 <div dir="rtl">
 
-## چه چیزی تست می‌شود؟
+## دریافت پروکسی‌ها
 
-- `http://` و `https://` نوع اتصال **به خود پروکسی** را مشخص می‌کنند. برای هرکدام، دسترسی به مقصد HTTPS با تونل CONNECT و ارسال درخواست به مقصد HTTP جداگانه سنجیده می‌شود. در حالت `https://` گواهی خود پروکسی هم باید معتبر باشد.
-- `socks4://` و `socks5://` نام مقصد را روی رانر resolve می‌کنند. `socks4a://` و `socks5h://` نام مقصد را به پروکسی می‌سپارند. هر دو شیوه با مقصد HTTPS آزمایش می‌شوند.
-- پاسخ باید HTTP 200 و حاوی یک IP عمومی معتبر باشد. کشور از IP خروجی گزارش‌شده توسط ipify با پایگاه DB-IP تعیین می‌شود. نتیجهٔ آزمون HTTP ساده به پاسخ بدون TLS متکی است و باید با همین محدودیت تفسیر شود.
-- تست روی آدرس‌های IPv4 یا IPv6 عمومی و بدون اعتبارنامه انجام می‌شود. سالم بودن یعنی پروکسی در زمان همان اجرا از رانر توانسته به مقصد آزمون برسد.
+| خروجی | محتوا |
+| --- | --- |
+| [فهرست کامل](results/all.txt) | یک آدرس `protocol://IP:port` در هر سطر، به‌ترتیب کمترین زمان پاسخ |
+| [به تفکیک کشور](results/countries) | برای هر کد دوحرفی، یک فهرست کامل و فایل‌های موجود به تفکیک پروتکل. `ZZ` یعنی کشور نامشخص |
+| [به تفکیک پروتکل](results/protocols) | [HTTP](results/protocols/http.txt) · [HTTPS](results/protocols/https.txt) · [SOCKS4](results/protocols/socks4.txt) · [SOCKS4a](results/protocols/socks4a.txt) · [SOCKS5](results/protocols/socks5.txt) · [SOCKS5h](results/protocols/socks5h.txt) |
+| [به تفکیک نوع اتصال](results/modes) | تونل CONNECT، ارسال مستقیم HTTP و تونل SOCKS |
+| [دادهٔ JSON](results/proxies.json) | پروتکل، حالت اتصال، IP خروجی، کشور و زمان پاسخ هر تست موفق |
+| [گزارش آخرین انتشار](results/manifest.json) | زمان شروع و پایان، شمار نامزدهای یکتا، نتیجهٔ دریافت فیدها و شمار پروکسی‌های سالم هر کشور |
 
-## فایل‌های نتیجه
+## از گردآوری تا انتشار
 
-این مسیرها پس از اولین اجرای موفق ساخته می‌شوند:
+1. **گردآوری** از ۱۲۸ فید عمومیِ ۴۴ منتشرکننده و حذف آدرس‌های تکراری. [فهرست منابع](sources.json)
+2. **تست موازی** همهٔ نامزدهای یکتا روی GitHub Actions. رانر برای هر پروکسیِ عمومی IPv4 یا IPv6 و بدون اعتبارنامه، از مسیر همان پروکسی درخواست می‌فرستد و پاسخ `HTTP 200` با IP عمومی معتبر را بررسی می‌کند.
+3. **دسته‌بندی و انتشار** پس از پایان همهٔ بخش‌ها. کشور بر اساس IP خروجی ثبت می‌شود. اگر یک آدرس در دو حالت از کشورهای متفاوت خارج شود، می‌تواند در هر دو فهرست دیده شود.
 
-</div>
+در `http://` و `https://` نوع اتصال به خود پروکسی فرق دارد. CONNECT و ارسال مستقیم HTTP جداگانه بررسی می‌شوند. در `https://` اعتبار گواهی خود پروکسی هم بررسی می‌شود. SOCKS4 و SOCKS5 نام مقصد را روی رانر resolve می‌کنند و SOCKS4a و SOCKS5h این کار را به پروکسی می‌سپارند. آزمون HTTP ساده به پاسخ بدون TLS متکی است.
 
-```text
-results/
-├── all.txt                       # protocol://IP:port
-├── protocols/
-│   ├── http.txt
-│   └── socks5.txt
-├── modes/
-│   ├── http-connect.txt
-│   └── http-forward.txt
-├── countries/
-│   └── DE/
-│       ├── all.txt
-│       └── socks5.txt
-├── proxies.json
-└── manifest.json
-```
+## زمان‌بندی و اجرای دستی
 
-<div dir="rtl">
-
-فایل‌های متنی از کمترین زمان پاسخ مرتب می‌شوند. پوشهٔ هر کشور با کد دوحرفی، مثل `DE`، `IR` یا `US`، ساخته می‌شود. `ZZ` برای کشور نامشخص است. اگر حالت‌های مختلف یک پروکسی IP خروجی متفاوتی داشته باشند، همان نشانی می‌تواند در چند پوشهٔ کشور ظاهر شود. `proxies.json` برای هر تست موفق، حالت، IP خروجی، کشور و زمان پاسخ را دارد. `manifest.json` زمان اجرا، شمار نامزدها، نتایج دریافت هر فید و شمار پروکسی‌های سالم هر کشور را ثبت می‌کند.
+گردش‌کار هر **۲ ساعت** در دقیقهٔ **۴۷ به وقت تهران** اجرا می‌شود. برای اجرای دستی، در **Actions → به‌روزرسانی پروکسی‌ها → Run workflow** شاخهٔ پیش‌فرض را انتخاب کنید. مقدار `limit=0` همهٔ نامزدها را بررسی می‌کند. برای اجرای کوتاه می‌توانید `limit=200` بگذارید و `publish` را خاموش کنید. فایل `proxy-results` در **Artifacts** اجرای موفق قابل دریافت است. [صفحهٔ اجرای اکشن](https://github.com/aradava/proxy-atlas/actions/workflows/proxies.yml)
 
 ## اجرای محلی
 
-پایتون ۳٫۱۱ یا جدیدتر و `curl` نسخهٔ ۸٫۴ یا جدیدتر با قابلیت `HTTPS-proxy` لازم است. وابستگی پایتون جداگانه‌ای وجود ندارد.
+به پایتون ۳٫۱۱ یا جدیدتر و `curl` نسخهٔ ۸٫۴ یا جدیدتر با قابلیت `HTTPS-proxy` نیاز دارید.
 
 </div>
 
 ```bash
-python prox.py
-python prox.py --limit 500 --workers 32 --timeout 6
-python prox.py --help
+git clone https://github.com/aradava/proxy-atlas.git
+cd proxy-atlas
+python prox.py --limit 500 --workers 32 --timeout 6 --output local-results
 ```
 
 <div dir="rtl">
 
-`python prox.py` همهٔ نامزدها را تست می‌کند. برای تست کوتاه‌تر، با `--limit` سقف دلخواه را وارد کنید. وقتی تعداد نامزدها از سقف اختیاری بیشتر باشد، برنامه به نوبت از منتشرکنندگان انتخاب می‌کند و نقطهٔ شروع فهرست‌های بلند بین اجراها تغییر می‌کند. `--timeout` سقف زمان هر درخواست بر حسب ثانیه و `--workers` تعداد بررسی‌های هم‌زمان است. `--output` مسیر ذخیره را تعیین می‌کند. گزینهٔ `--country-db` فایل محلی `CSV.GZ` از DB-IP را می‌پذیرد. در حالت عادی، برنامه پایگاه ماه جاری را دریافت می‌کند و در صورت خطا سراغ ماه قبل می‌رود.
+برای بررسی همهٔ نامزدها، `python prox.py` را اجرا کنید. خروجی پیش‌فرض در `results/` ذخیره می‌شود. با `--output` می‌توانید مسیر دیگری انتخاب کنید و با `--country-db` می‌توانید یک فایل محلی `CSV.GZ` از DB-IP بدهید. برنامه به‌طور پیش‌فرض پایگاه ماه جاری را دریافت می‌کند و در صورت خطا سراغ ماه قبل می‌رود.
 
-## افزودن منبع
+<details>
+<summary><strong>افزودن یا تغییر منابع</strong></summary>
 
-در [`sources.json`](sources.json) برای هر منتشرکننده نام، صفحهٔ منبع و فیدهای HTTPS را وارد کنید. فید متنی می‌تواند سطرهای `protocol://IP:port` داشته باشد. برای سطرهای `IP:port`، فیلد `protocol` را در تنظیم همان فید وارد کنید. اگر منبع هر سطر را به شکل `IP:port:Country` می‌دهد، `format` را `text-with-country` بگذارید. کشور خروجی از IP دیده‌شده در تست تعیین می‌شود.
+در [`sources.json`](sources.json) نام منتشرکننده، صفحهٔ منبع و نشانی فیدهای HTTPS را وارد کنید.
 
-برای فید JSON مقدار `format` را `json` بگذارید. داده می‌تواند آرایهٔ مستقیم یا آرایه‌ای در فیلد `data` یا `proxies` باشد. هر مورد باید `url` یا مجموعهٔ `host` (یا `ip` یا `ip_address`)، `port` و `protocol` (یا آرایهٔ `protocols`) داشته باشد. خطای یک فید در گزارش ثبت می‌شود و بررسی بقیهٔ منابع ادامه پیدا می‌کند.
+- برای متن با سطرهای `protocol://IP:port`، نشانی فید کافی است. برای سطرهای `IP:port`، فیلد `protocol` را اضافه کنید.
+- برای سطرهای `IP:port:Country`، مقدار `format` را `text-with-country` بگذارید.
+- برای JSON، مقدار `format` را `json` بگذارید. داده می‌تواند آرایهٔ مستقیم یا آرایه‌ای در `data` یا `proxies` باشد. هر مورد باید `url` یا مجموعهٔ `host`، `port` و `protocol` داشته باشد. `ip` و `ip_address` به‌جای `host` و آرایهٔ `protocols` به‌جای `protocol` هم پذیرفته می‌شوند.
 
-نشانی و اعتبار منتشرکنندگان در [`sources.json`](sources.json) و `results/manifest.json` ثبت می‌شود. دادهٔ جغرافیایی با مجوز CC BY 4.0 ارائه شده است. [سرویس تشخیص IP از ipify](https://www.ipify.org/) · [IP Geolocation by DB-IP](https://db-ip.com/db/lite.php)
+خطای هر فید در گزارش ثبت می‌شود و گردآوری از فیدهای دیگر ادامه پیدا می‌کند.
+
+</details>
+
+دادهٔ جغرافیایی تحت مجوز CC BY 4.0 ارائه شده است. [سرویس تشخیص IP از ipify](https://www.ipify.org/) · [IP Geolocation by DB-IP](https://db-ip.com/db/lite.php)
 
 </div>
