@@ -1,0 +1,27 @@
+name: بازتست پروکسی‌های سالم
+
+on:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: ثبت خروجی در شاخهٔ اصلی مخزن
+        type: boolean
+        default: true
+
+permissions: {}
+
+concurrency:
+  group: update-proxy-lists
+  queue: max
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    uses: ./.github/workflows/proxy-pipeline.yml
+    permissions:
+      contents: write
+    with:
+      scan: recheck
+      publish: ${{ github.event_name == 'schedule' || inputs.publish }}

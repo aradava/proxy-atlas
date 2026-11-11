@@ -1,0 +1,213 @@
+name: گردآوری، تست و انتشار پروکسی‌ها
+
+on:
+  workflow_call:
+    inputs:
+      scan:
+        type: string
+        required: true
+      limit:
+        type: number
+        default: 0
+      publish:
+        type: boolean
+        required: true
+
+permissions: {}
+
+jobs:
+  prepare:
+    name: گردآوری و تقسیم نامزدها
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    outputs:
+      shards: ${{ steps.plan.outputs.shards }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: دریافت فهرست مبنا و وضعیت آخرین انتشار
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: refs/heads/${{ github.event.repository.default_branch }}
+          path: .prox-previous
+          sparse-checkout: |
+            /full-scan/all.txt
+            /results/all.txt
+            /results/manifest.json
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+
+      - name: آماده‌سازی فهرست تست
+        id: plan
+        env:
+          PROXY_LIMIT: ${{ inputs.limit }}
+          SCAN_MODE: ${{ inputs.scan }}
+        run: |
+          options=()
+          if [[ "$SCAN_MODE" == recheck && "$GITHUB_EVENT_NAME" == schedule ]]; then
+            options+=(--skip-fresh)
+          fi
+          python3 actions_pipeline.py prepare "$RUNNER_TEMP/prox-plan" \
+            --snapshot-root "$GITHUB_WORKSPACE/.prox-previous" --scan "$SCAN_MODE" \
+            --limit "${PROXY_LIMIT:-0}" --github-output "$GITHUB_OUTPUT" "${options[@]}"
+
+      - name: ذخیرهٔ فهرست تست
+        if: steps.plan.outputs.shards != '[]'
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: proxy-plan
+          path: ${{ runner.temp }}/prox-plan/
+          if-no-files-found: error
+          retention-days: ${{ inputs.scan == 'recheck' && 1 || 3 }}
+          overwrite: true
+
+  check:
+    name: تست بخش ${{ matrix.shard }}
+    needs: prepare
+    if: needs.prepare.outputs.shards != '[]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        shard: ${{ fromJSON(needs.prepare.outputs.shards) }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
+        with:
+          name: proxy-plan
+          path: ${{ runner.temp }}/prox-plan
+
+      - name: بررسی پروکسی‌های بخش
+        env:
+          SHARD: ${{ matrix.shard }}
+        run: |
+          python3 actions_pipeline.py check "$RUNNER_TEMP/prox-plan" "$SHARD" "$RUNNER_TEMP/check-$SHARD.json"
+
+      - name: ذخیرهٔ نتیجهٔ بخش
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: proxy-checked-${{ matrix.shard }}
+          path: ${{ runner.temp }}/check-${{ matrix.shard }}.json
+          if-no-files-found: error
+          retention-days: ${{ inputs.scan == 'recheck' && 1 || 3 }}
+          overwrite: true
+
+  merge:
+    name: ادغام و دسته‌بندی نتیجه‌ها
+    needs: check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
+        with:
+          name: proxy-plan
+          path: ${{ runner.temp }}/prox-plan
+
+      - uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
+        with:
+          pattern: proxy-checked-*
+          merge-multiple: true
+          path: ${{ runner.temp }}/prox-reports
+
+      - name: ساخت خروجی کامل
+        run: |
+          python3 actions_pipeline.py merge "$RUNNER_TEMP/prox-plan" "$RUNNER_TEMP/prox-reports" "$RUNNER_TEMP/prox-results"
+
+      - name: خلاصهٔ اجرا
+        run: |
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          import os
+          from pathlib import Path
+
+          data = json.loads((Path(os.environ['RUNNER_TEMP']) / 'prox-results/manifest.json').read_text())
+          print('## نتیجهٔ بررسی')
+          if data['scan_mode'] == 'recheck':
+              print(f"- سالم‌های آخرین تست اصلی برای بازتست: {data['discovered_candidates']:,}")
+          else:
+              print(f"- نامزدهای یکتا: {data['discovered_candidates']:,}")
+              print(f"- نامزدها از سالم‌های آخرین تست اصلی: {data['previous_candidates']:,}")
+              print(f"- نامزدهایی که فقط در آخرین تست اصلی بودند: {data['previous_only_candidates']:,}")
+              print(f"- خطاهای دریافت منابع: {sum(bool(s['error']) for s in data['sources'])}")
+          print(f"- نامزدهای تست‌شده: {data['tested_candidates']:,}")
+          print(f"- پروکسی‌های سالم: {data['working_proxies']:,}")
+          print(f"- گروه‌های جغرافیایی: {len(data['countries'])}")
+          PY
+
+      - name: ذخیرهٔ فایل‌های قابل دانلود
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: proxy-results
+          path: ${{ runner.temp }}/prox-results/
+          if-no-files-found: error
+          retention-days: ${{ inputs.scan == 'recheck' && 1 || 3 }}
+          overwrite: true
+
+  publish:
+    name: ثبت نتیجه در مخزن
+    needs: merge
+    if: github.ref_name == github.event.repository.default_branch && inputs.publish
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: دریافت اسکریپت همین اجرا
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          path: .prox-code
+          sparse-checkout: |
+            /actions_pipeline.py
+            /prox.py
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+
+      - uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
+        with:
+          name: proxy-results
+          path: ${{ runner.temp }}/prox-results
+
+      - name: بررسی اعتبار فهرست مبنا
+        id: publication
+        run: |
+          python3 .prox-code/actions_pipeline.py stage-publication "$RUNNER_TEMP/prox-results" \
+            "$GITHUB_WORKSPACE" --github-output "$GITHUB_OUTPUT"
+
+      - name: ثبت و ارسال خروجی
+        if: steps.publication.outputs.publish == 'true'
+        env:
+          RESULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          rsync -a --delete "$RUNNER_TEMP/prox-results/" results/
+          git add -- results
+          if [[ -f full-scan/all.txt ]]; then
+            git add -- full-scan/all.txt
+          fi
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Update verified proxy lists'
+          git push origin "HEAD:refs/heads/$RESULT_BRANCH"
