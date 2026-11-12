@@ -4,11 +4,12 @@ import gzip
 import io
 import json
 import re
+import secrets
 import shutil
 import subprocess
 import sys
 from bisect import bisect_right
-from collections import defaultdict
+from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta, timezone
@@ -22,8 +23,8 @@ from urllib.parse import urlsplit
 PROTOCOLS = ("http", "https", "socks4", "socks4a", "socks5", "socks5h")
 WEB_PROXIES = ("http", "https")
 PROBE_URLS = {
-    "https": "https://api64.ipify.org/",
-    "http": "http://api.ipify.org/",
+    "https": ("https://api64.ipify.org/", "https://checkip.amazonaws.com/"),
+    "http": ("http://api.ipify.org/",),
 }
 COUNTRY_CODE = re.compile(r"[A-Z]{2}")
 ENDPOINT = re.compile(
@@ -67,6 +68,19 @@ class Check:
     latency_ms: int
 
 
+class CurlRequestError(ValueError):
+    def __init__(self, returncode, status):
+        super().__init__(f"curl {returncode}, HTTP {status}")
+        if returncode == 28:
+            self.reason = "timeout"
+        elif status not in ("?", "000", "200"):
+            self.reason = "http_status"
+        elif returncode and returncode != 63:
+            self.reason = "connection"
+        else:
+            self.reason = "invalid_response"
+
+
 def public_ip(value):
     if "%" in value:
         raise ValueError("Scoped IP address")
@@ -94,7 +108,7 @@ def parse_proxy(value, protocol=None):
 
 
 def parse_endpoint(value, protocol):
-    proxy = parse_proxy(value, protocol)
+    proxy = parse_proxy(value.strip().removesuffix("/"), protocol)
     if proxy is None:
         return ()
     schemes = {
@@ -108,28 +122,36 @@ def parse_endpoint(value, protocol):
 
 
 def feed_entries(payload, feed):
-    text = payload.decode("utf-8-sig")
     if feed.format in ("text", "text-with-country"):
+        text = payload.decode("utf-8-sig", errors="replace")
         for line in text.splitlines():
             parts = line.split(maxsplit=1)
             if parts and not parts[0].startswith("#"):
                 endpoint = parts[0]
                 if feed.format == "text-with-country":
-                    endpoint = endpoint.rpartition(":")[0]
+                    address, _, country = endpoint.rpartition(":")
+                    if COUNTRY_CODE.fullmatch(country.upper()):
+                        endpoint = address
                 yield from parse_endpoint(endpoint, feed.protocol)
         return
 
-    rows = json.loads(text)
+    rows = json.loads(payload.decode("utf-8-sig"))
     if isinstance(rows, dict):
         rows = rows.get("data", rows.get("proxies"))
     if not isinstance(rows, list):
         raise ValueError("JSON feed must be an array or contain a data/proxies array")
     for row in rows:
+        if isinstance(row, str):
+            yield from parse_endpoint(row, feed.protocol)
+            continue
         if not isinstance(row, dict):
             continue
-        if isinstance(row.get("url"), str):
-            yield from parse_endpoint(row["url"], feed.protocol)
-            continue
+        url = row.get("url", row.get("proxy"))
+        if isinstance(url, str):
+            endpoints = parse_endpoint(url, feed.protocol)
+            if endpoints:
+                yield from endpoints
+                continue
         host = row.get("host", row.get("ip", row.get("ip_address")))
         if not isinstance(host, str):
             continue
@@ -185,7 +207,7 @@ def curl_request(url, timeout, max_bytes, proxy=None, download=False):
     fields = status.split()
     if response.returncode or len(fields) != 2 or fields[0] != b"200" or len(body) > max_bytes:
         status_code = fields[0].decode("ascii", errors="replace") if fields else "?"
-        raise ValueError(f"curl {response.returncode}, HTTP {status_code}")
+        raise CurlRequestError(response.returncode, status_code)
     return body, round(float(fields[1]) * 1000)
 
 
@@ -193,6 +215,8 @@ def fetch_feed(feed):
     try:
         payload, _ = curl_request(feed.url, 20, MAX_FEED_BYTES, download=True)
         proxies = list(dict.fromkeys(feed_entries(payload, feed)))
+        if not proxies:
+            raise ValueError("No public proxy endpoints parsed")
         return feed, proxies, None
     except (ValueError, RecursionError, subprocess.TimeoutExpired) as error:
         return feed, [], str(error) if not isinstance(error, subprocess.TimeoutExpired) else "download timed out"
@@ -312,55 +336,93 @@ def load_country_database(started, path, *, save_to=None):
     raise ValueError("No usable DB-IP country database was available")
 
 
-def probe_ip(scheme, timeout, proxy=None):
-    body, latency = curl_request(PROBE_URLS[scheme], timeout, 256, proxy=proxy)
-    return public_ip(body.decode("ascii").strip()), latency
+def probe_ip(url, timeout, proxy=None):
+    if not url.startswith("http://"):
+        body, latency = curl_request(url, timeout, 256, proxy=proxy)
+        return public_ip(body.decode("ascii").strip()), latency
+
+    # A unique callback makes an old cached IP or static IP response invalid.
+    callback = f"prox_{secrets.token_hex(12)}"
+    body, latency = curl_request(f"{url}?format=jsonp&callback={callback}", timeout, 256, proxy=proxy)
+    prefix = f"{callback}(".encode("ascii")
+    body = body.strip()
+    if not body.startswith(prefix) or not body.endswith(b");"):
+        raise ValueError("HTTP probe did not echo its callback")
+    result = json.loads(body[len(prefix):-2].decode("ascii"))
+    if not isinstance(result, dict) or not isinstance(result.get("ip"), str):
+        raise ValueError("HTTP probe did not return an IP")
+    return public_ip(result["ip"]), latency
+
+
+def choose_target(urls, timeout):
+    last_error = None
+    for url in urls * 2:
+        try:
+            ip, _ = probe_ip(url, max(10, timeout))
+            return url, ip
+        except (ValueError, subprocess.TimeoutExpired) as error:
+            last_error = error
+    raise ValueError(f"آزمون مستقیم مقصد {urls[0]} ناموفق بود ({last_error})") from last_error
 
 
 def check_targets(timeout):
-    direct_ips = set()
-    for scheme in PROBE_URLS:
-        for attempt in range(2):
-            try:
-                ip, _ = probe_ip(scheme, max(10, timeout))
-                direct_ips.add(ip)
-                break
-            except (ValueError, subprocess.TimeoutExpired) as error:
-                if attempt == 1:
-                    raise ValueError(f"آزمون مستقیم مقصد {scheme.upper()} ناموفق بود ({error})") from error
-    return frozenset(direct_ips)
+    targets, direct_ips = {}, set()
+    for scheme, urls in PROBE_URLS.items():
+        targets[scheme], ip = choose_target(urls, timeout)
+        direct_ips.add(ip)
+    return targets, frozenset(direct_ips)
 
 
-def check_proxy(proxy, timeout, database, direct_ips):
+def probe_proxy(url, timeout, proxy, retry_timeout):
+    try:
+        return probe_ip(url, timeout, proxy)
+    except (CurlRequestError, subprocess.TimeoutExpired) as error:
+        if not retry_timeout or (isinstance(error, CurlRequestError) and error.reason != "timeout"):
+            raise
+    return probe_ip(url, timeout, proxy)
+
+
+def check_proxy(proxy, timeout, database, targets, direct_ips, retry_timeout):
     modes = [("https", "connect" if proxy.scheme in WEB_PROXIES else "tunnel")]
     if proxy.scheme in WEB_PROXIES:
         modes.append(("http", "forward"))
     checks = []
+    failures = Counter()
     for scheme, mode in modes:
         try:
-            ip, latency = probe_ip(scheme, timeout, proxy)
-        except (ValueError, subprocess.TimeoutExpired):
+            ip, latency = probe_proxy(targets[scheme], timeout, proxy, retry_timeout)
+        except CurlRequestError as error:
+            failures[error.reason] += 1
+            continue
+        except subprocess.TimeoutExpired:
+            failures["timeout"] += 1
+            continue
+        except ValueError:
+            failures["invalid_response"] += 1
             continue
         if ip in direct_ips:
+            failures["runner_ip"] += 1
             continue
         checks.append(Check(proxy, mode, str(ip), database.country(ip), latency))
-    return checks
+    return checks, failures
 
 
-def check_all(proxies, workers, timeout, database, direct_ips):
+def check_all(proxies, workers, timeout, database, targets, direct_ips, *, retry_timeout=False):
     def check(proxy):
-        return check_proxy(proxy, timeout, database, direct_ips)
+        return check_proxy(proxy, timeout, database, targets, direct_ips, retry_timeout)
 
     checks = []
+    failures = Counter()
     remaining = iter(proxies)
     completed = 0
     with ThreadPoolExecutor(max_workers=workers) as executor:
         while batch := list(islice(remaining, workers * 16)):
-            for result in executor.map(check, batch):
+            for result, rejected in executor.map(check, batch):
                 checks.extend(result)
+                failures.update(rejected)
             completed += len(batch)
             print(f"تست‌شده {completed:,}/{len(proxies):,}، آزمون موفق {len(checks):,}", flush=True)
-    return checks
+    return checks, failures
 
 
 def json_file(path, data):
@@ -451,19 +513,21 @@ def main():
     try:
         require_curl()
         feeds = load_feeds(args.sources)
-        direct_ips = check_targets(args.timeout)
+        targets, direct_ips = check_targets(args.timeout)
         database, database_source = load_country_database(started, args.country_db)
         by_publisher, candidates, collection_stats = collect(feeds, args.output / "all.txt")
         selected = select_candidates(by_publisher, candidates, args.limit, started)
         print(f"بررسی {len(selected):,} از {len(candidates):,} نامزد یکتا", flush=True)
-        checks = check_all(selected, args.workers, args.timeout, database, direct_ips)
+        checks, failures = check_all(selected, args.workers, args.timeout, database, targets, direct_ips)
         if not checks:
-            check_targets(args.timeout)
+            for target in targets.values():
+                choose_target((target,), args.timeout)
         publish_snapshot(args.output, checks, {
             "started_at_utc": started.isoformat(timespec="seconds"),
             "finished_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             "country_database": {"source": database_source, "credit": "IP Geolocation by DB-IP"},
             "tested_candidates": len(selected),
+            "probe_failures": dict(failures),
             **collection_stats,
         })
     except (ValueError, OSError, EOFError, KeyError, TypeError, subprocess.SubprocessError) as error:

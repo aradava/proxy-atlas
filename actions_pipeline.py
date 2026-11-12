@@ -2,6 +2,7 @@ import argparse
 import json
 import subprocess
 import sys
+from collections import Counter
 from dataclasses import asdict
 from datetime import datetime, timedelta, timezone
 from hashlib import file_digest
@@ -107,47 +108,66 @@ def prepare(args):
     print(f"{len(selected):,} نامزد یکتا در {shard_count:,} بخش آماده شد", flush=True)
 
 
+def read_shard(plan_path, shard, size):
+    with (plan_path / f"{shard}.txt").open(encoding="utf-8") as file:
+        proxies = [prox.parse_proxy(line.rstrip("\n")) for line in file]
+    if None in proxies or len(set(proxies)) != len(proxies) or len(proxies) != size:
+        raise ValueError(f"Invalid candidate list for shard {shard}")
+    return proxies
+
+
 def check(args):
     prox.require_curl()
     plan = read_json(args.plan / "plan.json")
     if not 0 <= args.shard < len(plan["shard_sizes"]):
         raise ValueError(f"Invalid shard: {args.shard}")
-    with (args.plan / f"{args.shard}.txt").open(encoding="utf-8") as file:
-        proxies = [prox.parse_proxy(line.rstrip("\n")) for line in file]
-    if None in proxies or len(set(proxies)) != len(proxies) or len(proxies) != plan["shard_sizes"][args.shard]:
-        raise ValueError(f"Invalid candidate list for shard {args.shard}")
-
-    direct_ips = prox.check_targets(prox.DEFAULT_TIMEOUT)
+    proxies = read_shard(args.plan, args.shard, plan["shard_sizes"][args.shard])
+    targets, direct_ips = prox.check_targets(prox.DEFAULT_TIMEOUT)
     started = datetime.fromisoformat(plan["manifest"]["started_at_utc"])
     database, _ = prox.load_country_database(started, args.plan / COUNTRY_FILE)
-    checks = prox.check_all(proxies, prox.DEFAULT_WORKERS, prox.DEFAULT_TIMEOUT, database, direct_ips)
+    checks, failures = prox.check_all(
+        proxies, prox.DEFAULT_WORKERS, prox.DEFAULT_TIMEOUT, database, targets, direct_ips,
+        retry_timeout=plan["manifest"]["scan_mode"] == "recheck",
+    )
     if not checks:
-        prox.check_targets(prox.DEFAULT_TIMEOUT)
+        for target in targets.values():
+            prox.choose_target((target,), prox.DEFAULT_TIMEOUT)
     prox.json_file(args.report, {
         "plan_id": plan["id"], "shard": args.shard, "tested_candidates": len(proxies),
         "checks": [asdict(item) for item in checks],
+        "probe_failures": dict(failures),
     })
 
 
 def merge(args):
     plan = read_json(args.plan / "plan.json")
     checks = []
+    failures = Counter()
     tested = 0
     for shard, size in enumerate(plan["shard_sizes"]):
         report = read_json(args.reports / f"check-{shard}.json")
         if report["plan_id"] != plan["id"] or report["shard"] != shard or report["tested_candidates"] != size:
             raise ValueError(f"Incomplete or mismatched report for shard {shard}")
         tested += report["tested_candidates"]
+        failures.update(report.get("probe_failures", {}))
+        candidates = set(read_shard(args.plan, shard, size))
+        seen = set()
         for row in report["checks"]:
             proxy = prox.Proxy(**row.pop("proxy"))
             modes = ("connect", "forward") if proxy.scheme in prox.WEB_PROXIES else ("tunnel",)
-            if proxy.scheme not in prox.PROTOCOLS or row["mode"] not in modes or not prox.COUNTRY_CODE.fullmatch(row["country"]):
+            key = (proxy, row["mode"])
+            if (
+                proxy not in candidates or row["mode"] not in modes or key in seen
+                or not prox.COUNTRY_CODE.fullmatch(row["country"])
+            ):
                 raise ValueError(f"Invalid check in report for shard {shard}")
+            seen.add(key)
             checks.append(prox.Check(proxy=proxy, **row))
     prox.publish_snapshot(args.output, checks, {
         **plan["manifest"],
         "finished_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "tested_candidates": tested,
+        "probe_failures": dict(failures),
     })
 
 

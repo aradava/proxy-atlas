@@ -390,5 +390,129 @@
       {"url": "https://openproxylist.xyz/socks4.txt", "protocol": "socks4"},
       {"url": "https://openproxylist.xyz/socks5.txt", "protocol": "socks5"}
     ]
+  },
+  {
+    "publisher": "mmpx12",
+    "homepage": "https://github.com/mmpx12/proxy-list",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/mmpx12/proxy-list/master/https.txt", "protocol": "https"}
+    ]
+  },
+  {
+    "publisher": "Argh94",
+    "homepage": "https://github.com/Argh94/Proxy-List",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/Argh94/Proxy-List/main/HTTP.txt", "protocol": "http"},
+      {"url": "https://raw.githubusercontent.com/Argh94/Proxy-List/main/SOCKS5.txt", "protocol": "socks5"}
+    ]
+  },
+  {
+    "publisher": "watchttvv",
+    "homepage": "https://github.com/watchttvv/free-proxy-list",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/watchttvv/free-proxy-list/main/proxy.txt"}
+    ]
+  },
+  {
+    "publisher": "Vann-Dev",
+    "homepage": "https://github.com/Vann-Dev/proxy-list",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/Vann-Dev/proxy-list/main/proxies/http.txt", "protocol": "http"}
+    ]
+  },
+  {
+    "publisher": "VPSLabCloud",
+    "homepage": "https://github.com/VPSLabCloud/VPSLab-Free-Proxy-List",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/VPSLabCloud/VPSLab-Free-Proxy-List/main/http_all.txt", "protocol": "http"},
+      {"url": "https://raw.githubusercontent.com/VPSLabCloud/VPSLab-Free-Proxy-List/main/socks4_all.txt", "protocol": "socks4"},
+      {"url": "https://raw.githubusercontent.com/VPSLabCloud/VPSLab-Free-Proxy-List/main/socks5_all.txt", "protocol": "socks5"}
+    ]
+  },
+  {
+    "publisher": "MrMarble",
+    "homepage": "https://github.com/MrMarble/proxy-list",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/MrMarble/proxy-list/main/http.txt", "protocol": "http"},
+      {"url": "https://raw.githubusercontent.com/MrMarble/proxy-list/main/https.txt", "protocol": "https"},
+      {"url": "https://raw.githubusercontent.com/MrMarble/proxy-list/main/socks5.txt", "protocol": "socks5"}
+    ]
+  },
+  {
+    "publisher": "vmheaven",
+    "homepage": "https://github.com/vmheaven/VMHeaven.io-Free-Proxy-List",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/vmheaven/VMHeaven.io-Free-Proxy-List/main/http.txt", "protocol": "http"},
+      {"url": "https://raw.githubusercontent.com/vmheaven/VMHeaven.io-Free-Proxy-List/main/https.txt", "protocol": "https"},
+      {"url": "https://raw.githubusercontent.com/vmheaven/VMHeaven.io-Free-Proxy-List/main/socks4.txt", "protocol": "socks4"},
+      {"url": "https://raw.githubusercontent.com/vmheaven/VMHeaven.io-Free-Proxy-List/main/socks5.txt", "protocol": "socks5"}
+    ]
+  },
+  {
+    "publisher": "NikolaiT",
+    "homepage": "https://github.com/NikolaiT/free-proxy-list",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/NikolaiT/free-proxy-list/main/proxies/http_working.txt", "protocol": "http"},
+      {"url": "https://raw.githubusercontent.com/NikolaiT/free-proxy-list/main/proxies/https_working.txt", "protocol": "https"},
+      {"url": "https://raw.githubusercontent.com/NikolaiT/free-proxy-list/main/proxies/socks5_working.txt", "protocol": "socks5"}
+    ]
+  },
+  {
+    "publisher": "komutan234",
+    "homepage": "https://github.com/komutan234/Proxy-List-Free",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/komutan234/Proxy-List-Free/main/proxies/http.txt", "protocol": "http"},
+      {"url": "https://raw.githubusercontent.com/komutan234/Proxy-List-Free/main/proxies/socks4.txt", "protocol": "socks4"},
+      {"url": "https://raw.githubusercontent.com/komutan234/Proxy-List-Free/main/proxies/socks5.txt", "protocol": "socks5"}
+    ]
+  },
+  {
+    "publisher": "Bes-js",
+    "homepage": "https://github.com/Bes-js/public-proxy-list",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/Bes-js/public-proxy-list/main/proxies.txt"}
+    ]
+  },
+  {
+    "publisher": "6yyn",
+    "homepage": "https://github.com/6yyn/free-proxy-list",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/6yyn/free-proxy-list/main/http.txt", "protocol": "http"},
+      {"url": "https://raw.githubusercontent.com/6yyn/free-proxy-list/main/https.txt", "protocol": "https"}
+    ]
+  },
+  {
+    "publisher": "Vadim287",
+    "homepage": "https://github.com/Vadim287/free-proxy",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/Vadim287/free-proxy/main/proxies/http.txt", "protocol": "http"},
+      {"url": "https://raw.githubusercontent.com/Vadim287/free-proxy/main/proxies/socks4.txt", "protocol": "socks4"},
+      {"url": "https://raw.githubusercontent.com/Vadim287/free-proxy/main/proxies/socks5.txt", "protocol": "socks5"}
+    ]
+  },
+  {
+    "publisher": "anutmagang",
+    "homepage": "https://github.com/anutmagang/Free-HighQuality-Proxy-Socks",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/anutmagang/Free-HighQuality-Proxy-Socks/main/results/http.txt", "protocol": "http"}
+    ]
+  },
+  {
+    "publisher": "z3a4",
+    "homepage": "https://github.com/z3a4/free-proxy-list",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/z3a4/free-proxy-list/main/proxies/checked/protocols/http/http-proxies.txt", "protocol": "http"},
+      {"url": "https://raw.githubusercontent.com/z3a4/free-proxy-list/main/proxies/checked/protocols/https/https-proxies.txt", "protocol": "https"}
+    ]
+  },
+  {
+    "publisher": "proxygenerator1",
+    "homepage": "https://github.com/proxygenerator1/ProxyGenerator",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/proxygenerator1/ProxyGenerator/main/Stable/http.txt", "protocol": "http"},
+      {"url": "https://raw.githubusercontent.com/proxygenerator1/ProxyGenerator/main/Stable/https.txt", "protocol": "https"},
+      {"url": "https://raw.githubusercontent.com/proxygenerator1/ProxyGenerator/main/Stable/socks4.txt", "protocol": "socks4"},
+      {"url": "https://raw.githubusercontent.com/proxygenerator1/ProxyGenerator/main/Stable/socks5.txt", "protocol": "socks5"}
+    ]
   }
 ]

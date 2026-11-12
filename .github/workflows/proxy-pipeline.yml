@@ -153,6 +153,15 @@ jobs:
           print(f"- نامزدهای تست‌شده: {data['tested_candidates']:,}")
           print(f"- پروکسی‌های سالم: {data['working_proxies']:,}")
           print(f"- گروه‌های جغرافیایی: {len(data['countries'])}")
+          labels = {
+              "timeout": "پایان مهلت",
+              "connection": "خطای اتصال",
+              "http_status": "کد HTTP ناموفق",
+              "invalid_response": "پاسخ نامعتبر",
+              "runner_ip": "پاسخ با IP رانر",
+          }
+          for reason, count in sorted(data.get("probe_failures", {}).items()):
+              print(f"- آزمون‌های ردشده ({labels.get(reason, reason)}): {count:,}")
           PY
 
       - name: ذخیرهٔ فایل‌های قابل دانلود
