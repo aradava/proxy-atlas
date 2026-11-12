@@ -14,7 +14,7 @@ from uuid import uuid4
 import prox
 
 
-TARGET_SHARD_SIZE = 15_000
+TARGET_SHARD_SIZE = 10_000
 RECHECK_SHARD_SIZE = 3_000
 MAX_MATRIX_JOBS = 256
 COUNTRY_FILE = "country.csv.gz"

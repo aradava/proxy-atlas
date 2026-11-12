@@ -2,8 +2,6 @@ name: بازتست پروکسی‌های سالم
 run-name: ${{ inputs.automation && 'بازتست سالم‌ها · Cloudflare' || 'بازتست پروکسی‌های سالم' }}
 
 on:
-  schedule:
-    - cron: '13,28,43,58 * * * *'
   workflow_dispatch:
     inputs:
       publish:
@@ -29,5 +27,5 @@ jobs:
       contents: write
     with:
       scan: recheck
-      publish: ${{ github.event_name == 'schedule' || inputs.publish }}
-      skip_fresh: ${{ github.event_name == 'schedule' || inputs.automation }}
+      publish: ${{ inputs.publish }}
+      skip_fresh: ${{ inputs.automation }}

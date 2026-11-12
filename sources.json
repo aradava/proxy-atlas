@@ -195,14 +195,15 @@
       {"url": "https://proxyspace.pro/http.txt", "protocol": "http"},
       {"url": "https://proxyspace.pro/https.txt", "protocol": "https"},
       {"url": "https://proxyspace.pro/socks4.txt", "protocol": "socks4"},
-      {"url": "https://proxyspace.pro/socks5.txt", "protocol": "socks5"}
+      {"url": "https://proxyspace.pro/socks5.txt", "protocol": "socks5"},
+      {"url": "https://proxyspace.pro/country/ir/http.txt", "protocol": "http"}
     ]
   },
   {
     "publisher": "ProxyLister",
     "homepage": "https://proxylister.com/api",
     "feeds": [
-      {"url": "https://proxylister.com/api/v1/proxies/export?format=json&limit=1000", "format": "json"}
+      {"url": "https://proxylister.com/api/v1/proxies/export?format=csv&limit=1000", "format": "csv"}
     ]
   },
   {
@@ -513,6 +514,151 @@
       {"url": "https://raw.githubusercontent.com/proxygenerator1/ProxyGenerator/main/Stable/https.txt", "protocol": "https"},
       {"url": "https://raw.githubusercontent.com/proxygenerator1/ProxyGenerator/main/Stable/socks4.txt", "protocol": "socks4"},
       {"url": "https://raw.githubusercontent.com/proxygenerator1/ProxyGenerator/main/Stable/socks5.txt", "protocol": "socks5"}
+    ]
+  },
+  {
+    "publisher": "ProxyNova",
+    "homepage": "https://www.proxynova.com/proxy-server-list/",
+    "feeds": [
+      {"url": "https://www.proxynova.com/proxy-server-list/country-de/", "protocol": "http", "format": "proxynova"},
+      {"url": "https://www.proxynova.com/proxy-server-list/country-sg/", "protocol": "http", "format": "proxynova"},
+      {"url": "https://www.proxynova.com/proxy-server-list/country-jp/", "protocol": "http", "format": "proxynova"},
+      {"url": "https://www.proxynova.com/proxy-server-list/country-gb/", "protocol": "http", "format": "proxynova"},
+      {"url": "https://www.proxynova.com/proxy-server-list/country-za/", "protocol": "http", "format": "proxynova"},
+      {"url": "https://www.proxynova.com/proxy-server-list/", "protocol": "http", "format": "proxynova"},
+      {"url": "https://www.proxynova.com/proxy-server-list/country-ir/", "protocol": "http", "format": "proxynova"},
+      {"url": "https://www.proxynova.com/proxy-server-list/country-us/", "protocol": "http", "format": "proxynova"}
+    ]
+  },
+  {
+    "publisher": "Proxy Spider",
+    "homepage": "https://proxy-spider.com/",
+    "feeds": [
+      {"url": "https://proxy-spider.com/proxies/locations/ir-iran-islamic-republic-of", "protocol": "http", "format": "table"},
+      {"url": "https://proxy-spider.com/proxies/locations/us-united-states", "protocol": "http", "format": "table"},
+      {"url": "https://proxy-spider.com/proxies/locations/cn-china", "protocol": "http", "format": "table"},
+      {"url": "https://proxy-spider.com/proxies/locations/ru-russian", "protocol": "http", "format": "table"},
+      {"url": "https://proxy-spider.com/proxies/locations/de-germany", "protocol": "http", "format": "table"},
+      {"url": "https://proxy-spider.com/proxies/locations/in-india", "protocol": "http", "format": "table"},
+      {"url": "https://proxy-spider.com/proxies/locations/au-australia", "protocol": "http", "format": "table"},
+      {"url": "https://proxy-spider.com/proxies/locations/id-indonesia", "protocol": "http", "format": "table"}
+    ]
+  },
+  {
+    "publisher": "FreeProxyUpdate",
+    "homepage": "https://freeproxyupdate.com/download-txt",
+    "feeds": [
+      {"url": "https://freeproxyupdate.com/iran-ir", "format": "table"},
+      {"url": "https://freeproxyupdate.com/", "format": "table"}
+    ]
+  },
+  {
+    "publisher": "FreeProxy.World",
+    "homepage": "https://www.freeproxy.world/",
+    "feeds": [
+      {"url": "https://www.freeproxy.world/", "format": "table"},
+      {"url": "https://www.freeproxy.world/?page=2", "format": "table"},
+      {"url": "https://www.freeproxy.world/?page=3", "format": "table"},
+      {"url": "https://www.freeproxy.world/?page=4", "format": "table"},
+      {"url": "https://www.freeproxy.world/?page=5", "format": "table"},
+      {"url": "https://www.freeproxy.world/?country=IR", "format": "table"}
+    ]
+  },
+  {
+    "publisher": "ProxyHub",
+    "homepage": "https://proxyhub.me/",
+    "feeds": [
+      {"url": "https://proxyhub.me/", "format": "table"},
+      {"url": "https://proxyhub.me/en/ir-free-proxy-list.html", "format": "table"}
+    ]
+  },
+  {
+    "publisher": "ProxyVerity",
+    "homepage": "https://proxyverity.com/free-proxy-list/",
+    "feeds": [
+      {"url": "https://proxyverity.com/free-proxy-list/", "format": "proxyverity"},
+      {"url": "https://proxyverity.com/free-proxy-list/?page=2", "format": "proxyverity"},
+      {"url": "https://proxyverity.com/free-proxy-list/?page=3", "format": "proxyverity"},
+      {"url": "https://proxyverity.com/free-proxy-list/ir/", "format": "proxyverity"}
+    ]
+  },
+  {
+    "publisher": "ProxyCheck.app",
+    "homepage": "https://proxycheck.app/docs/api",
+    "feeds": [
+      {"url": "https://proxycheck.app/api/v1/public-proxies/export?format=txt&limit=3000"},
+      {"url": "https://proxycheck.app/api/v1/public-proxies/export?format=txt&country=IR"}
+    ]
+  },
+  {
+    "publisher": "SevenworksDev",
+    "homepage": "https://github.com/SevenworksDev/proxy-list",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/SevenworksDev/proxy-list/main/proxies/http.txt", "protocol": "http"},
+      {"url": "https://raw.githubusercontent.com/SevenworksDev/proxy-list/main/proxies/https.txt", "protocol": "https"},
+      {"url": "https://raw.githubusercontent.com/SevenworksDev/proxy-list/main/proxies/socks4.txt", "protocol": "socks4"},
+      {"url": "https://raw.githubusercontent.com/SevenworksDev/proxy-list/main/proxies/socks5.txt", "protocol": "socks5"}
+    ]
+  },
+  {
+    "publisher": "SoliSpirit",
+    "homepage": "https://github.com/SoliSpirit/proxy-list",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/SoliSpirit/proxy-list/main/http.txt", "protocol": "http"},
+      {"url": "https://raw.githubusercontent.com/SoliSpirit/proxy-list/main/https.txt", "protocol": "https"},
+      {"url": "https://raw.githubusercontent.com/SoliSpirit/proxy-list/main/socks4.txt", "protocol": "socks4"},
+      {"url": "https://raw.githubusercontent.com/SoliSpirit/proxy-list/main/socks5.txt", "protocol": "socks5"}
+    ]
+  },
+  {
+    "publisher": "Tsprnay",
+    "homepage": "https://github.com/Tsprnay/Proxy-lists",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/Tsprnay/Proxy-lists/master/proxies/http.txt", "protocol": "http"},
+      {"url": "https://raw.githubusercontent.com/Tsprnay/Proxy-lists/master/proxies/https.txt", "protocol": "https"},
+      {"url": "https://raw.githubusercontent.com/Tsprnay/Proxy-lists/master/proxies/socks4.txt", "protocol": "socks4"},
+      {"url": "https://raw.githubusercontent.com/Tsprnay/Proxy-lists/master/proxies/socks5.txt", "protocol": "socks5"}
+    ]
+  },
+  {
+    "publisher": "ErcinDedeoglu",
+    "homepage": "https://github.com/ErcinDedeoglu/proxies",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/ErcinDedeoglu/proxies/main/proxies/http.txt", "protocol": "http"},
+      {"url": "https://raw.githubusercontent.com/ErcinDedeoglu/proxies/main/proxies/https.txt", "protocol": "https"},
+      {"url": "https://raw.githubusercontent.com/ErcinDedeoglu/proxies/main/proxies/socks4.txt", "protocol": "socks4"},
+      {"url": "https://raw.githubusercontent.com/ErcinDedeoglu/proxies/main/proxies/socks5.txt", "protocol": "socks5"}
+    ]
+  },
+  {
+    "publisher": "Moleway",
+    "homepage": "https://github.com/Moleway/Free-Proxy-List",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/Moleway/Free-Proxy-List/main/http.txt", "protocol": "http"},
+      {"url": "https://raw.githubusercontent.com/Moleway/Free-Proxy-List/main/https.txt", "protocol": "https"},
+      {"url": "https://raw.githubusercontent.com/Moleway/Free-Proxy-List/main/socks4.txt", "protocol": "socks4"},
+      {"url": "https://raw.githubusercontent.com/Moleway/Free-Proxy-List/main/socks5.txt", "protocol": "socks5"}
+    ]
+  },
+  {
+    "publisher": "themiralay",
+    "homepage": "https://github.com/themiralay/Proxy-List-World",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/themiralay/Proxy-List-World/master/data.txt", "protocol": "http"}
+    ]
+  },
+  {
+    "publisher": "CB-X2-Jun",
+    "homepage": "https://github.com/CB-X2-Jun/proxy-lists",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/CB-X2-Jun/proxy-lists/main/public/proxies.json", "format": "json"}
+    ]
+  },
+  {
+    "publisher": "HideMy.name",
+    "homepage": "https://hidemy.name/en/proxy-list/",
+    "feeds": [
+      {"url": "https://hide.mn/en/proxy-list/", "format": "table"}
     ]
   }
 ]

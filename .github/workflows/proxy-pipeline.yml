@@ -79,7 +79,7 @@ jobs:
       contents: read
     strategy:
       fail-fast: false
-      max-parallel: 8
+      max-parallel: 20
       matrix:
         shard: ${{ fromJSON(needs.prepare.outputs.shards) }}
     steps:
@@ -193,6 +193,7 @@ jobs:
           sparse-checkout: |
             /actions_pipeline.py
             /prox.py
+            /proxy_sources.py
           sparse-checkout-cone-mode: false
           persist-credentials: false
 

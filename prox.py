@@ -19,9 +19,13 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from urllib.parse import urlsplit
 
+from proxy_sources import table_entries
+
 
 PROTOCOLS = ("http", "https", "socks4", "socks4a", "socks5", "socks5h")
 WEB_PROXIES = ("http", "https")
+TABLE_FORMATS = ("table", "proxynova", "proxyverity")
+PROTOCOL_LABEL = re.compile(r"\b(?:https?|socks4a?|socks5h?)\b", re.IGNORECASE | re.ASCII)
 PROBE_URLS = {
     "https": ("https://api64.ipify.org/", "https://checkip.amazonaws.com/"),
     "http": ("http://api.ipify.org/",),
@@ -121,7 +125,27 @@ def parse_endpoint(value, protocol):
     return tuple(Proxy(scheme, proxy.host, proxy.port) for scheme in schemes)
 
 
+def parse_host_port(host, port, protocol):
+    host = host.strip()
+    if ":" in host and not host.startswith("["):
+        host = f"[{host}]"
+    return parse_endpoint(f"{host}:{str(port).strip()}", protocol)
+
+
 def feed_entries(payload, feed):
+    if feed.format in TABLE_FORMATS:
+        text = payload.decode("utf-8-sig", errors="replace")
+        for address, port, labels in table_entries(text, feed.format):
+            schemes = PROTOCOL_LABEL.findall(labels or "") or [feed.protocol]
+            for scheme in schemes:
+                scheme = scheme.lower() if scheme else None
+                if port is None:
+                    for endpoint in address.split():
+                        yield from parse_endpoint(endpoint, scheme)
+                else:
+                    yield from parse_host_port(address, port, scheme)
+        return
+
     if feed.format in ("text", "text-with-country"):
         text = payload.decode("utf-8-sig", errors="replace")
         for line in text.splitlines():
@@ -135,11 +159,15 @@ def feed_entries(payload, feed):
                 yield from parse_endpoint(endpoint, feed.protocol)
         return
 
-    rows = json.loads(payload.decode("utf-8-sig"))
-    if isinstance(rows, dict):
-        rows = rows.get("data", rows.get("proxies"))
-    if not isinstance(rows, list):
-        raise ValueError("JSON feed must be an array or contain a data/proxies array")
+    text = payload.decode("utf-8-sig")
+    if feed.format == "csv":
+        rows = csv.DictReader(io.StringIO(text))
+    else:
+        rows = json.loads(text)
+        if isinstance(rows, dict):
+            rows = rows.get("data", rows.get("proxies"))
+        if not isinstance(rows, list):
+            raise ValueError("JSON feed must be an array or contain a data/proxies array")
     for row in rows:
         if isinstance(row, str):
             yield from parse_endpoint(row, feed.protocol)
@@ -155,14 +183,12 @@ def feed_entries(payload, feed):
         host = row.get("host", row.get("ip", row.get("ip_address")))
         if not isinstance(host, str):
             continue
-        if ":" in host and not host.startswith("["):
-            host = f"[{host}]"
         schemes = row.get("protocol", row.get("protocols", feed.protocol))
         if not isinstance(schemes, list):
             schemes = [schemes]
         for scheme in schemes:
             if isinstance(scheme, str) and scheme.lower() in PROTOCOLS:
-                yield from parse_endpoint(f"{host}:{row.get('port')}", scheme.lower())
+                yield from parse_host_port(host, row.get("port"), scheme.lower())
 
 
 def load_feeds(path):
@@ -176,7 +202,7 @@ def load_feeds(path):
         url = urlsplit(feed.url)
         if url.scheme != "https" or not url.hostname or url.username is not None:
             raise ValueError(f"Expected an HTTPS feed URL without credentials: {feed.url}")
-        if feed.protocol not in (None, *PROTOCOLS) or feed.format not in ("text", "text-with-country", "json"):
+        if feed.protocol not in (None, *PROTOCOLS) or feed.format not in ("text", "text-with-country", "json", "csv", *TABLE_FORMATS):
             raise ValueError(f"Unsupported feed configuration: {feed.url}")
     if not feeds or len({feed.url for feed in feeds}) != len(feeds):
         raise ValueError("Configure at least one feed and use each URL once")
@@ -192,7 +218,7 @@ def curl_request(url, timeout, max_bytes, proxy=None, download=False):
     if download:
         command += [
             "--proto", "=https", "--proto-redir", "=https", "--location",
-            "--max-redirs", "3",
+            "--max-redirs", "3", "--user-agent", "ProxyAtlas/1.0 (+https://github.com/aradava/proxy-atlas)",
         ]
     if proxy is None:
         command += ["--proxy", ""]
@@ -240,12 +266,22 @@ def read_previous_candidates(path):
 def collect(feeds, previous_file=None):
     by_publisher = defaultdict(dict)
     source_stats = []
+    batches = defaultdict(list)
+    for index, feed in enumerate(feeds):
+        # Pages from the same website are fetched in sequence to avoid bursts.
+        key = urlsplit(feed.url).hostname if feed.format in TABLE_FORMATS else index
+        batches[key].append((index, feed))
+
+    def fetch_batch(batch):
+        return [(index, fetch_feed(feed)) for index, feed in batch]
+
     with ThreadPoolExecutor(max_workers=12) as executor:
-        for feed, proxies, error in executor.map(fetch_feed, feeds):
-            source_stats.append({**asdict(feed), "candidates": len(proxies), "error": error})
-            by_publisher[feed.publisher].update(dict.fromkeys(proxies))
-            status = f"خطا: {error}" if error else f"{len(proxies):,} نامزد"
-            print(f"{feed.publisher}: {status} ({feed.url})", flush=True)
+        downloaded = [item for batch in executor.map(fetch_batch, batches.values()) for item in batch]
+    for _, (feed, proxies, error) in sorted(downloaded):
+        source_stats.append({**asdict(feed), "candidates": len(proxies), "error": error})
+        by_publisher[feed.publisher].update(dict.fromkeys(proxies))
+        status = f"خطا: {error}" if error else f"{len(proxies):,} نامزد"
+        print(f"{feed.publisher}: {status} ({feed.url})", flush=True)
     candidates = set().union(*by_publisher.values())
     previous = read_previous_candidates(previous_file)
     previous_only = {proxy: None for proxy in previous if proxy not in candidates}

@@ -5,7 +5,7 @@ workers_dev = true
 preview_urls = false
 
 [triggers]
-crons = ["6 */2 * * *", "13,28,43,58 * * * *"]
+crons = ["6 */3 * * *", "36 1-23/3 * * *"]
 
 [observability]
 enabled = true

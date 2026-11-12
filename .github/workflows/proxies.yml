@@ -2,8 +2,6 @@ name: به‌روزرسانی پروکسی‌ها
 run-name: ${{ inputs.automation && 'تست کامل · Cloudflare' || 'به‌روزرسانی پروکسی‌ها' }}
 
 on:
-  schedule:
-    - cron: '6 */2 * * *'
   workflow_dispatch:
     inputs:
       limit:
@@ -34,4 +32,4 @@ jobs:
     with:
       scan: full
       limit: ${{ fromJSON(format('{0}', inputs.limit || 0)) }}
-      publish: ${{ github.event_name == 'schedule' || inputs.publish }}
+      publish: ${{ inputs.publish }}

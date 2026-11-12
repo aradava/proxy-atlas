@@ -3,9 +3,9 @@ const workflows = new Map([
   ["recheck", { file: "recheck.yml", inputs: {} }],
   ["full", { file: "proxies.yml", inputs: { limit: 0 } }],
 ]);
-const schedules = new Map([
-  ["6 */2 * * *", "full"],
-  ["13,28,43,58 * * * *", "recheck"],
+const schedules = new Set([
+  "6 */3 * * *",
+  "36 1-23/3 * * *",
 ]);
 
 const responseHeaders = {
@@ -45,10 +45,11 @@ export default {
   },
 
   async scheduled(controller, env) {
-    const workflow = workflows.get(schedules.get(controller.cron));
-    if (!workflow) {
-      throw new Error(`Unknown cron trigger: ${controller.cron}`);
+    if (!schedules.has(controller.cron)) {
+      console.warn(`Ignored cron trigger: ${controller.cron}`);
+      return;
     }
+    const workflow = workflows.get("full");
     if (!env.GITHUB_ACTIONS_TOKEN) {
       throw new Error("The GITHUB_ACTIONS_TOKEN secret is required");
     }

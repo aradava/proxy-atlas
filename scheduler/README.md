@@ -2,7 +2,15 @@
 
 # زمان‌بند Cloudflare برای ProxyAtlas
 
-Worker از API گیت‌هاب دو اکشن موجود را فراخوانی می‌کند. تست اصلی هر دو ساعت و بازتست هر ۱۵ دقیقه درخواست می‌شود. هر دو از همان صف مشترک GitHub عبور می‌کنند.
+Worker هر ۹۰ دقیقه یک تست کامل با `limit=0` در GitHub Actions ثبت می‌کند. تست کامل و بازتست دستی از صف مشترک عبور می‌کنند.
+
+## به‌روزرسانی Worker موجود از داشبورد
+
+1. در **Edit code** محتوای کامل [worker.mjs](worker.mjs) را جایگزین کنید و **Deploy** بزنید.
+2. در **Settings → Trigger Events → Cron Triggers** زمان‌بندی‌های قبلی را حذف کنید و این دو عبارت را جداگانه اضافه کنید.
+   - `6 */3 * * *`
+   - `36 1-23/3 * * *`
+3. Cloudflare ساعت‌های Cron را با UTC می‌خواند. این دو عبارت با هم به‌ترتیب ساعت‌های ۰۰:۰۶، ۰۱:۳۶، ۰۳:۰۶ و به همین شکل تا پایان روز را پوشش می‌دهند. بعد از نوبت بعدی، اجرای **تست کامل · Cloudflare** را در [GitHub Actions](https://github.com/aradava/proxy-atlas/actions/workflows/proxies.yml) بررسی کنید. [مستندات Cron](https://developers.cloudflare.com/workers/configuration/cron-triggers/)
 
 ## تست دستی از مرورگر
 
@@ -28,7 +36,6 @@ npx wrangler@4.160.0 deploy --config scheduler/wrangler.toml
 
 <div dir="rtl">
 
-3. برای تأیید زمان‌بندی، در **GitHub Actions** اجراهای با عنوان **تست کامل · Cloudflare** و **بازتست سالم‌ها · Cloudflare** را بررسی کنید. این عنوان‌ها برای اجراهای Cron هستند. ثبت تغییرات Cron در Cloudflare ممکن است تا ۱۵ دقیقه طول بکشد. [Cron Triggers](https://developers.cloudflare.com/workers/configuration/cron-triggers/)
-4. بعد از تأیید هر دو اجرا از Cloudflare، بخش `schedule` را از `proxies.yml` و `recheck.yml` حذف کنید و `workflow_dispatch` را برای اجرای Worker و اجرای دستی نگه دارید.
+3. بعد از نوبت بعدی، اجرای **تست کامل · Cloudflare** را در [GitHub Actions](https://github.com/aradava/proxy-atlas/actions/workflows/proxies.yml) بررسی کنید. ثبت تغییرات Cron در Cloudflare ممکن است تا ۱۵ دقیقه طول بکشد. [Cron Triggers](https://developers.cloudflare.com/workers/configuration/cron-triggers/)
 
 </div>
