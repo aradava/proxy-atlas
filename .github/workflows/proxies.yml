@@ -149,6 +149,7 @@ jobs:
           print(f"- خطاهای دریافت منابع: {sum(bool(s['error']) for s in data['sources'])}")
           print(f"- نامزدهای تست‌شده: {data['tested_candidates']:,}")
           print(f"- پروکسی‌های سالم: {data['working_proxies']:,}")
+          print(f"- تأییدشده با پاسخ HTTPS، بدون IP خروجی ثبت‌شده: {data['https_response_only_proxies']:,}")
           print(f"- گروه‌های جغرافیایی: {len(data['countries'])}")
           labels = {
               "timeout": "پایان مهلت",

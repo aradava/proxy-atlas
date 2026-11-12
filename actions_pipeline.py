@@ -1,5 +1,6 @@
 import argparse
 import json
+import os
 import subprocess
 import sys
 from collections import Counter
@@ -130,8 +131,7 @@ def check(args):
         retry_timeout=plan["manifest"]["scan_mode"] == "recheck",
     )
     if not checks:
-        for urls in targets.values():
-            prox.choose_target(urls, prox.DEFAULT_TIMEOUT)
+        prox.choose_target(targets["https"], prox.DEFAULT_TIMEOUT)
     prox.json_file(args.report, {
         "plan_id": plan["id"], "shard": args.shard, "tested_candidates": len(proxies),
         "checks": [asdict(item) for item in checks],
@@ -241,6 +241,9 @@ def main():
     try:
         args.stage(args)
     except (ValueError, OSError, EOFError, KeyError, TypeError, subprocess.SubprocessError) as error:
+        if os.environ.get("GITHUB_ACTIONS") == "true":
+            message = str(error).replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+            print(f"::error::{message}", flush=True)
         parser.exit(1, f"Prox: {error}\n")
 
 

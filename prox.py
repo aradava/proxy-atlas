@@ -68,7 +68,7 @@ class Feed:
 class Check:
     proxy: Proxy
     mode: str
-    exit_ip: str
+    exit_ip: str | None
     country: str
     latency_ms: int
 
@@ -433,11 +433,11 @@ def choose_target(urls, timeout):
 
 
 def check_targets(timeout):
-    targets, direct_ips = {}, set()
+    https_urls = PROBE_URLS["https"]
+    primary, direct_ip = choose_target(https_urls, timeout)
+    targets = {"https": (primary,), "http": PROBE_URLS["http"]}
+    direct_ips = {direct_ip}
     for scheme, urls in PROBE_URLS.items():
-        primary, ip = choose_target(urls, timeout)
-        ready = [primary]
-        direct_ips.add(ip)
         for url in urls:
             if url == primary:
                 continue
@@ -445,9 +445,9 @@ def check_targets(timeout):
                 ip, _ = probe_ip(url, max(10, timeout))
             except (ValueError, subprocess.TimeoutExpired):
                 continue
-            ready.append(url)
             direct_ips.add(ip)
-        targets[scheme] = tuple(ready)
+            if scheme == "https":
+                targets[scheme] += (url,)
     return targets, frozenset(direct_ips)
 
 
@@ -459,10 +459,10 @@ def new_probe(proxy, mode, target):
 def parallel_responses(probes, workers, timeout):
     if not probes:
         return
-    command = [
-        "curl", "--disable", "--parallel", "--parallel-immediate",
-        "--parallel-max", str(workers), "--config", "-",
-    ]
+    command = ["curl", "--disable", "--show-error"]
+    if len(probes) > 1:
+        command += ["--parallel", "--parallel-immediate", "--parallel-max", str(workers)]
+    command += ["--config", "-"]
     options = (
         "silent\nfail\ngloboff\nremove-on-error\n"
         f"max-time = {timeout}\nconnect-timeout = {min(timeout, 8)}\n"
@@ -496,38 +496,72 @@ def parallel_responses(probes, workers, timeout):
             if index in reports or not 0 <= index < len(probes):
                 raise ValueError("Unexpected curl transfer index")
             reports[index] = int(code), int(status), int(connect), round(float(seconds) * 1000), float(tls_seconds) > 0
-        if len(reports) != len(probes):
-            detail = process.stderr.decode("utf-8", errors="replace").strip()[:300]
-            raise ValueError(f"curl returned {len(reports)}/{len(probes)} probe reports (exit {process.returncode}): {detail}")
-
+        pending = []
         for index, probe in enumerate(probes):
-            code, status, connect, latency, tls_established = reports[index]
-            if code in (23, 27):
-                raise ValueError(f"curl could not store or process probe {index} (exit {code})")
+            report = reports.get(index)
+            if report is None or report[0] in (23, 27, 42) or (report[0] == 43 and len(probes) > 1):
+                pending.append(probe)
+                continue
+            code, status, connect, latency, tls_established = report
             body = b""
             if code == 0 and 200 <= status < 300:
                 path = Path(directory) / f"{index}.body"
-                with path.open("rb") as file:
-                    body = file.read(MAX_PROBE_BYTES + 1)
+                try:
+                    with path.open("rb") as file:
+                        body = file.read(MAX_PROBE_BYTES + 1)
+                except FileNotFoundError:
+                    # A successful response with no body can leave no file.
+                    pass
             yield probe, ProbeResponse(code, status, connect, latency, tls_established, body)
+
+    if not pending:
+        return
+    if len(probes) == 1:
+        details = process.stderr.decode("utf-8", errors="replace").strip().splitlines()
+        detail = details[-1][:300] if details else "missing transfer metadata"
+        raise ValueError(f"curl could not complete an individual probe (exit {process.returncode}): {detail}")
+
+    # curl can abort a parallel session without reporting all transfers.
+    # Keep completed results and retry just the unfinished work at lower concurrency.
+    print(
+        f"curl exit {process.returncode}: retrying {len(pending):,}/{len(probes):,} incomplete probes",
+        flush=True,
+    )
+    retry_workers = max(1, workers // 2)
+    retry_size = min(retry_workers * 4, len(probes) // 2)
+    for start in range(0, len(pending), retry_size):
+        yield from parallel_responses(pending[start:start + retry_size], retry_workers, timeout)
 
 
 def check_response(probe, response, database, direct_ips):
+    if response.status == 407 or response.connect_status >= 400:
+        return None, "http_status"
+
+    if response.curl_code == 0 and 200 <= response.status < 300:
+        try:
+            ip = probe_exit_ip(response.body, probe.callback)
+        except ValueError:
+            pass
+        else:
+            if ip in direct_ips:
+                return None, "runner_ip"
+            return Check(probe.proxy, probe.mode, str(ip), database.country(ip), response.latency_ms), None
+
+    if (
+        probe.mode != "forward"
+        and response.tls_established
+        and 200 <= response.status < 600
+    ):
+        country = database.country(ip_address(probe.proxy.host))
+        return Check(probe.proxy, probe.mode, None, country, response.latency_ms), None
+
     if response.curl_code == 28:
         return None, "timeout"
-    if (response.status and not 200 <= response.status < 300) or response.connect_status >= 400:
+    if response.status and not 200 <= response.status < 300:
         return None, "http_status"
     if response.curl_code not in (0, 63):
         return None, "connection"
-    if response.curl_code == 63 or not response.status:
-        return None, "invalid_response"
-    try:
-        ip = probe_exit_ip(response.body, probe.callback)
-    except ValueError:
-        return None, "invalid_response"
-    if ip in direct_ips:
-        return None, "runner_ip"
-    return Check(probe.proxy, probe.mode, str(ip), database.country(ip), response.latency_ms), None
+    return None, "invalid_response"
 
 
 def check_all(proxies, workers, timeout, database, targets, direct_ips, *, retry_timeout=False):
@@ -536,7 +570,7 @@ def check_all(proxies, workers, timeout, database, targets, direct_ips, *, retry
     remaining = iter(proxies)
     completed = 0
     https_targets = targets["https"]
-    while batch := list(islice(remaining, workers * 16)):
+    while batch := list(islice(remaining, workers * 4)):
         probes = []
         for proxy in batch:
             if proxy.scheme in WEB_PROXIES:
@@ -584,11 +618,19 @@ def write_snapshot(root, checks, manifest):
     for protocol in PROTOCOLS:
         lists[f"protocols/{protocol}.txt"] = {}
     rows = []
+    with_exit_ip = set()
+    without_exit_ip = set()
     for check in sorted(checks, key=lambda item: (item.latency_ms, item.proxy.url, item.mode)):
         url, protocol, country = check.proxy.url, check.proxy.scheme, check.country
+        if check.exit_ip is None:
+            without_exit_ip.add(url)
+        else:
+            with_exit_ip.add(url)
         rows.append({
             "proxy": url, "protocol": protocol, "mode": check.mode,
-            "exit_ip": check.exit_ip, "country": country, "latency_ms": check.latency_ms,
+            "exit_ip": check.exit_ip, "country": country,
+            "country_source": "proxy_ip" if check.exit_ip is None else "exit_ip",
+            "latency_ms": check.latency_ms,
         })
         for path in (
             "all.txt", f"protocols/{protocol}.txt", f"modes/{protocol}-{check.mode}.txt",
@@ -605,6 +647,7 @@ def write_snapshot(root, checks, manifest):
     json_file(root / "manifest.json", {
         **SCHEMA, **manifest,
         "working_proxies": len(lists["all.txt"]),
+        "https_response_only_proxies": len(without_exit_ip - with_exit_ip),
         "successful_probes": len(checks),
         "countries": {code: len(lists[f"countries/{code}/all.txt"]) for code in countries},
     })
@@ -669,8 +712,7 @@ def main():
         print(f"بررسی {len(selected):,} از {len(candidates):,} نامزد یکتا", flush=True)
         checks, failures = check_all(selected, args.workers, args.timeout, database, targets, direct_ips)
         if not checks:
-            for urls in targets.values():
-                choose_target(urls, args.timeout)
+            choose_target(targets["https"], args.timeout)
         publish_snapshot(args.output, checks, {
             "started_at_utc": started.isoformat(timespec="seconds"),
             "finished_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
