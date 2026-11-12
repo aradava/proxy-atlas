@@ -18,7 +18,6 @@
 
 <p align="center">
   <a href="https://github.com/aradava/proxy-atlas/actions/workflows/proxies.yml"><img src="https://github.com/aradava/proxy-atlas/actions/workflows/proxies.yml/badge.svg?branch=main" alt="وضعیت تست کامل"></a>
-  <a href="https://github.com/aradava/proxy-atlas/actions/workflows/recheck.yml"><img src="https://github.com/aradava/proxy-atlas/actions/workflows/recheck.yml/badge.svg?branch=main" alt="وضعیت بازتست سالم‌ها"></a>
   <a href="results/manifest.json"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Faradava%2Fproxy-atlas%2Fmain%2Fresults%2Fmanifest.json&amp;query=%24.working_proxies&amp;label=%D8%B3%D8%A7%D9%84%D9%85%20%D8%AF%D8%B1%20%D8%A2%D8%AE%D8%B1%DB%8C%D9%86%20%D8%A7%D9%86%D8%AA%D8%B4%D8%A7%D8%B1&amp;color=0D9488&amp;labelColor=0B2137&amp;style=flat-square" alt="شمار پروکسی‌های سالم در آخرین انتشار"></a>
 </p>
 
@@ -38,7 +37,7 @@
 ## از فید تا فهرست عمومی
 
 1. **گردآوری از ۷۴ منتشرکننده.** نامزدها را از فایل‌های متنی، JSON، CSV و جدول‌های عمومی می‌خوانیم و با سالم‌های آخرین تست کامل ترکیب می‌کنیم. آدرس، پورت و پروتکل تعیین می‌کنند کدام موارد تکراری‌اند. خطای هر فید در گزارش تست کامل ثبت می‌شود و جمع‌آوری از فیدهای دیگر ادامه پیدا می‌کند. [منابع پروژه](sources.json)
-2. **تقسیم و تست موازی.** GitHub Actions نامزدهای یکتا را بین چند رانر تقسیم می‌کند. هر رانر ابتدا IP مستقیم خود را اندازه می‌گیرد و بعد از مسیر پروکسی درخواست می‌فرستد. قبولی به پاسخ `HTTP 200` و یک IP عمومی متفاوت از IP مستقیم رانر نیاز دارد. [گردش‌کار تست](.github/workflows/proxy-pipeline.yml)
+2. **تقسیم و تست موازی.** GitHub Actions نامزدهای یکتا را بین چند رانر تقسیم می‌کند. هر رانر ابتدا IP مستقیم خود را اندازه می‌گیرد و بعد از مسیر پروکسی درخواست می‌فرستد. قبولی به پاسخ `HTTP 200` و یک IP عمومی متفاوت از IP مستقیم رانر نیاز دارد. [گردش‌کار تست](.github/workflows/proxies.yml)
 3. **سنجش روش‌های اتصال.** برای HTTP و HTTPS، تونل CONNECT و ارسال مستقیم HTTP جداگانه تست می‌شوند. درخواست HTTP یک شناسهٔ تازه دارد که باید در پاسخ برگردد تا پاسخ کش‌شدهٔ قدیمی قبول نشود. برای SOCKS، ارتباط تونلی سنجیده می‌شود. [منطق تست](prox.py)
 4. **ادغام و انتشار.** پس از پایان بخش‌ها، نتیجه‌ها را ادغام می‌کنیم، کشور را از IP خروجی پیدا می‌کنیم و آدرس‌های سالم را بر اساس زمان پاسخ در فهرست عمومی منتشر می‌کنیم. هر خروجی به تست همان اجرا متکی است. [فهرست منتشرشده](results/)
 
@@ -46,12 +45,7 @@
 
 ## تست کامل هر ۹۰ دقیقه
 
-| نوبت | برنامه | چه کاری انجام می‌دهد؟ |
-| --- | --- | --- |
-| [تست کامل](https://github.com/aradava/proxy-atlas/actions/workflows/proxies.yml) | هر **۹۰ دقیقه** | فیدها را دوباره می‌خواند و همهٔ نامزدهای یکتا و سالم‌های آخرین تست کامل را می‌سنجد. |
-| [بازتست سالم‌ها](https://github.com/aradava/proxy-atlas/actions/workflows/recheck.yml) | دستی | سالم‌های آخرین تست کامل را دوباره می‌سنجد. |
-
-Cloudflare درخواست تست کامل را به GitHub Actions می‌فرستد. تست‌های کامل و دستی در یک صف مشترک به‌نوبت اجرا می‌شوند. پس از پایان تست، نتیجه در فهرست عمومی منتشر می‌شود. [زمان‌بند پروژه](scheduler/worker.mjs) · [منطق تست](actions_pipeline.py)
+Cloudflare هر ۹۰ دقیقه تست کامل را در GitHub Actions ثبت می‌کند. این گردش‌کار فیدها را دوباره می‌خواند، همهٔ نامزدهای یکتا و سالم‌های آخرین تست را می‌سنجد و نتیجه را در فهرست عمومی منتشر می‌کند. درخواست‌های خودکار و دستی به‌نوبت از یک صف عبور می‌کنند. [گردش‌کار تست کامل](https://github.com/aradava/proxy-atlas/actions/workflows/proxies.yml)
 
 [فهرست مبنا](full-scan/all.txt) سالم‌های آخرین تست کامل را نگه می‌دارد. حتی اگر آدرسی در فیدهای نوبت بعد دیده نشود، از فهرست مبنا وارد تست می‌شود.
 

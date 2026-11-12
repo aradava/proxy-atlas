@@ -1,8 +1,6 @@
 const repository = "aradava/proxy-atlas";
-const workflows = new Map([
-  ["recheck", { file: "recheck.yml", inputs: {} }],
-  ["full", { file: "proxies.yml", inputs: { limit: 0 } }],
-]);
+const workflowFile = "proxies.yml";
+const workflowUrl = `https://github.com/${repository}/actions/workflows/${workflowFile}`;
 const schedules = new Set([
   "6 */3 * * *",
   "36 1-23/3 * * *",
@@ -49,23 +47,19 @@ export default {
       console.warn(`Ignored cron trigger: ${controller.cron}`);
       return;
     }
-    const workflow = workflows.get("full");
     if (!env.GITHUB_ACTIONS_TOKEN) {
       throw new Error("The GITHUB_ACTIONS_TOKEN secret is required");
     }
 
-    const result = await dispatchWorkflow(workflow, env.GITHUB_ACTIONS_TOKEN, {
-      automation: true,
-      publish: true,
-    });
+    const result = await dispatchWorkflow(env.GITHUB_ACTIONS_TOKEN, true);
     if (!result.ok) {
       const detail = result.message ? `: ${result.message}` : "";
-      throw new Error(`GitHub rejected ${workflow.file} with HTTP ${result.status}${detail}`);
+      throw new Error(`GitHub rejected ${workflowFile} with HTTP ${result.status}${detail}`);
     }
 
     console.log(JSON.stringify({
       trigger: "cron",
-      workflow: workflow.file,
+      workflow: workflowFile,
       scheduled_at: new Date(controller.scheduledTime).toISOString(),
       github_run_id: result.runId,
       github_run_url: result.runUrl,
@@ -85,9 +79,9 @@ async function runManualTest(request, env, origin) {
   }
 
   const input = await request.json().catch(() => null);
-  const workflow = workflows.get(input?.workflow);
   const password = input?.password;
-  if (!workflow || typeof password !== "string" || password.length > 256) {
+  if ((input?.workflow !== undefined && input.workflow !== "full") ||
+      typeof password !== "string" || password.length > 256) {
     return json({ message: "درخواست تست معتبر نیست." }, 400);
   }
 
@@ -103,12 +97,8 @@ async function runManualTest(request, env, origin) {
     return json({ message: "Secret با نام GITHUB_ACTIONS_TOKEN تنظیم نشده است." }, 503);
   }
 
-  const workflowUrl = `https://github.com/${repository}/actions/workflows/${workflow.file}`;
   try {
-    const result = await dispatchWorkflow(workflow, env.GITHUB_ACTIONS_TOKEN, {
-      automation: false,
-      publish: true,
-    });
+    const result = await dispatchWorkflow(env.GITHUB_ACTIONS_TOKEN, false);
     if (!result.ok) {
       return json({
         message: `گیت‌هاب درخواست را رد کرد (HTTP ${result.status}).${result.message ? " " + result.message : ""}`,
@@ -118,7 +108,7 @@ async function runManualTest(request, env, origin) {
 
     console.log(JSON.stringify({
       trigger: "manual",
-      workflow: workflow.file,
+      workflow: workflowFile,
       github_run_id: result.runId,
       github_run_url: result.runUrl,
     }));
@@ -136,12 +126,9 @@ async function runManualTest(request, env, origin) {
   }
 }
 
-async function dispatchWorkflow(workflow, token, { automation, publish }) {
-  const url = `https://api.github.com/repos/${repository}/actions/workflows/${workflow.file}/dispatches`;
-  const inputs = Object.fromEntries(
-    Object.entries({ ...workflow.inputs, automation, publish })
-      .map(([name, value]) => [name, String(value)]),
-  );
+async function dispatchWorkflow(token, automation) {
+  const url = `https://api.github.com/repos/${repository}/actions/workflows/${workflowFile}/dispatches`;
+  const inputs = { limit: "0", automation: String(automation), publish: "true" };
   const response = await fetch(url, {
     method: "POST",
     redirect: "manual",
@@ -241,7 +228,7 @@ function dashboard(nonce, manualEnabled) {
     }
     h1 { font-size: clamp(1.65rem, 5vw, 2.65rem); margin: 0 0 .65rem; }
     p { margin: 0; line-height: 1.85; }
-    .intro p, .description { color: var(--muted); }
+    .intro p { color: var(--muted); }
     form { padding: 1.65rem 2rem 2rem; }
     fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
     label { display: block; font-size: .91rem; font-weight: 700; margin-bottom: .6rem; }
@@ -250,17 +237,7 @@ function dashboard(nonce, manualEnabled) {
       border: 1px solid var(--border); border-radius: 9px; background: #0b1720;
       color: inherit;
     }
-    .actions {
-      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: .9rem; margin-top: 1.45rem;
-    }
-    .action {
-      display: flex; flex-direction: column; gap: .6rem; padding: 1.15rem;
-      border-radius: 13px; border: 1px solid var(--border); background: #162632;
-    }
-    .action:first-child { border-color: #386158; }
-    .action h2 { font-size: 1.03rem; margin: 0; }
-    .action p { font-size: .82rem; }
+    .actions { margin-top: 1.45rem; }
     button {
       margin-top: auto; min-height: 43px; cursor: pointer;
       border: 1px solid #496677; border-radius: 8px; padding: .6rem .9rem;
@@ -283,7 +260,6 @@ function dashboard(nonce, manualEnabled) {
       .shell { width: calc(100% - 28px); }
       .topbar { min-height: 66px; }
       .intro, form { padding: 1.25rem; }
-      .actions { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -296,26 +272,17 @@ function dashboard(nonce, manualEnabled) {
     <main class="panel">
       <div class="intro">
         <h1>تست دستی پروکسی‌ها</h1>
-        <p>اکشن را همین حالا از Cloudflare به صف GitHub بفرست.</p>
+        <p>تست کامل خودکار هر ۹۰ دقیقه در صف GitHub ثبت می‌شود. از این صفحه می‌توانی همان تست را دستی شروع کنی.</p>
       </div>
       <form id="test-form" method="post" action="/run" autocomplete="off">
         <fieldset id="controls"${manualEnabled ? "" : " disabled"}>
           <label for="password">رمز تست دستی</label>
           <input id="password" type="password" maxlength="256" dir="ltr" required>
           <div class="actions">
-            <div class="action">
-              <h2>بازتست سالم‌ها</h2>
-              <p class="description">پروکسی‌های سالم آخرین تست کامل دوباره بررسی می‌شوند.</p>
-              <button class="primary" type="submit" value="recheck">اجرای بازتست</button>
-            </div>
-            <div class="action">
-              <h2>تست کامل</h2>
-              <p class="description">همهٔ نامزدها از منابع گردآوری و بدون سقف بررسی می‌شوند.</p>
-              <button type="submit" value="full">اجرای تست کامل</button>
-            </div>
+            <button class="primary" type="submit">اجرای تست کامل</button>
           </div>
         </fieldset>
-        ${manualEnabled ? "" : '<p class="notice">برای فعال‌کردن دکمه‌ها، Secret با نام <code>MANUAL_TEST_PASSWORD</code> را در Cloudflare اضافه کن.</p>'}
+        ${manualEnabled ? "" : '<p class="notice">برای فعال‌کردن دکمه، Secret با نام <code>MANUAL_TEST_PASSWORD</code> را در Cloudflare اضافه کن.</p>'}
         <div id="result" class="notice" hidden>
           <p id="message" role="status" aria-live="polite"></p>
           <a id="run-link" hidden>مشاهده در GitHub Actions</a>
@@ -336,8 +303,7 @@ function dashboard(nonce, manualEnabled) {
       event.preventDefault();
       if (controls.disabled) return;
 
-      const workflow = event.submitter?.value || "recheck";
-      const body = JSON.stringify({ workflow, password: password.value });
+      const body = JSON.stringify({ password: password.value });
       controls.disabled = true;
       result.hidden = false;
       result.dataset.tone = "info";
