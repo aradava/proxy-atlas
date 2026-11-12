@@ -130,8 +130,8 @@ def check(args):
         retry_timeout=plan["manifest"]["scan_mode"] == "recheck",
     )
     if not checks:
-        for target in targets.values():
-            prox.choose_target((target,), prox.DEFAULT_TIMEOUT)
+        for urls in targets.values():
+            prox.choose_target(urls, prox.DEFAULT_TIMEOUT)
     prox.json_file(args.report, {
         "plan_id": plan["id"], "shard": args.shard, "tested_candidates": len(proxies),
         "checks": [asdict(item) for item in checks],
