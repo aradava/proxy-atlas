@@ -8,10 +8,11 @@ import secrets
 import shutil
 import subprocess
 import sys
+from base64 import urlsafe_b64encode
 from bisect import bisect_right
 from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from datetime import datetime, timedelta, timezone
 from ipaddress import IPv6Address, ip_address
 from itertools import islice
@@ -26,9 +27,11 @@ PROTOCOLS = ("http", "https", "socks4", "socks4a", "socks5", "socks5h")
 WEB_PROXIES = ("http", "https")
 TABLE_FORMATS = ("table", "proxynova", "proxyverity")
 PROTOCOL_LABEL = re.compile(r"\b(?:https?|socks4a?|socks5h?)\b", re.IGNORECASE | re.ASCII)
+CLOUDFLARE_TRACE = "https://www.cloudflare.com/cdn-cgi/trace"
+HTTP_ECHO_URL = "http://httpbingo.org/base64/"
 PROBE_URLS = {
-    "https": ("https://api64.ipify.org/", "https://checkip.amazonaws.com/"),
-    "http": ("http://api.ipify.org/",),
+    "https": ("https://api64.ipify.org/", "https://checkip.amazonaws.com/", CLOUDFLARE_TRACE),
+    "http": ("http://api.ipify.org/", HTTP_ECHO_URL),
 }
 COUNTRY_CODE = re.compile(r"[A-Z]{2}")
 ENDPOINT = re.compile(
@@ -37,7 +40,7 @@ ENDPOINT = re.compile(
 )
 MAX_FEED_BYTES = 8 * 1024 * 1024
 MAX_GEO_BYTES = 16 * 1024 * 1024
-MAX_PROBE_BYTES = 256
+MAX_PROBE_BYTES = 1024
 DEFAULT_WORKERS = 256
 DEFAULT_TIMEOUT = 6
 SCHEMA = {"generator": "prox", "schema_version": 1}
@@ -71,6 +74,8 @@ class Check:
     exit_ip: str | None
     country: str
     latency_ms: int
+    verification: str = "exit_ip"
+    used_alternate: bool = False
 
 
 @dataclass(frozen=True)
@@ -79,7 +84,7 @@ class Probe:
     mode: str
     target: str
     url: str
-    callback: str | None
+    challenge: str | None
 
 
 @dataclass(frozen=True)
@@ -89,6 +94,9 @@ class ProbeResponse:
     connect_status: int
     latency_ms: int
     tls_established: bool
+    tcp_connected: bool
+    remote_ip: str
+    remote_port: int
     body: bytes
 
 
@@ -174,7 +182,8 @@ def feed_entries(payload, feed):
                 endpoint = parts[0]
                 if feed.format == "text-with-country":
                     address, _, country = endpoint.rpartition(":")
-                    if COUNTRY_CODE.fullmatch(country.upper()):
+                    # Some feeds append a country name instead of an ISO code.
+                    if country and country[0].isalpha():
                         endpoint = address
                 yield from parse_endpoint(endpoint, feed.protocol)
         return
@@ -393,6 +402,10 @@ def load_country_database(started, path, *, save_to=None):
 
 
 def probe_url(url):
+    if url == HTTP_ECHO_URL:
+        challenge = secrets.token_hex(12)
+        encoded = urlsafe_b64encode(challenge.encode("ascii")).decode("ascii")
+        return url + encoded, challenge
     if not url.startswith("http://"):
         return url, None
     # A unique callback makes an old cached IP or static IP response invalid.
@@ -400,12 +413,21 @@ def probe_url(url):
     return f"{url}?format=jsonp&callback={callback}", callback
 
 
-def probe_exit_ip(body, callback):
+def probe_exit_ip(body, target, challenge):
     if len(body) > MAX_PROBE_BYTES:
         raise ValueError("Probe response was too large")
-    if callback is None:
+    if target == HTTP_ECHO_URL:
+        if body.strip() != challenge.encode("ascii"):
+            raise ValueError("HTTP probe did not echo its challenge")
+        return None
+    if target == CLOUDFLARE_TRACE:
+        addresses = [line[3:] for line in body.decode("ascii").splitlines() if line.startswith("ip=")]
+        if len(addresses) != 1:
+            raise ValueError("Cloudflare trace did not return a single IP")
+        return public_ip(addresses[0])
+    if challenge is None:
         return public_ip(body.decode("ascii").strip())
-    prefix = f"{callback}(".encode("ascii")
+    prefix = f"{challenge}(".encode("ascii")
     body = body.strip()
     if not body.startswith(prefix) or not body.endswith(b");"):
         raise ValueError("HTTP probe did not echo its callback")
@@ -416,9 +438,9 @@ def probe_exit_ip(body, callback):
 
 
 def probe_ip(url, timeout):
-    request_url, callback = probe_url(url)
+    request_url, challenge = probe_url(url)
     body, latency = curl_request(request_url, timeout, MAX_PROBE_BYTES)
-    return probe_exit_ip(body, callback), latency
+    return probe_exit_ip(body, url, challenge), latency
 
 
 def choose_target(urls, timeout):
@@ -435,7 +457,7 @@ def choose_target(urls, timeout):
 def check_targets(timeout):
     https_urls = PROBE_URLS["https"]
     primary, direct_ip = choose_target(https_urls, timeout)
-    targets = {"https": (primary,), "http": PROBE_URLS["http"]}
+    targets = {"https": (primary,), "http": PROBE_URLS["http"][:1]}
     direct_ips = {direct_ip}
     for scheme, urls in PROBE_URLS.items():
         for url in urls:
@@ -445,15 +467,16 @@ def check_targets(timeout):
                 ip, _ = probe_ip(url, max(10, timeout))
             except (ValueError, subprocess.TimeoutExpired):
                 continue
-            direct_ips.add(ip)
-            if scheme == "https":
+            if ip is not None:
+                direct_ips.add(ip)
+            if url not in targets[scheme]:
                 targets[scheme] += (url,)
     return targets, frozenset(direct_ips)
 
 
 def new_probe(proxy, mode, target):
-    url, callback = probe_url(target)
-    return Probe(proxy, mode, target, url, callback)
+    url, challenge = probe_url(target)
+    return Probe(proxy, mode, target, url, challenge)
 
 
 def parallel_responses(probes, workers, timeout):
@@ -472,7 +495,7 @@ def parallel_responses(probes, workers, timeout):
     for index, probe in enumerate(probes):
         metadata = (
             f"{index} %{{exitcode}} %{{http_code}} %{{http_connect}} "
-            "%{time_total} %{time_appconnect}\n"
+            "%{time_total} %{time_appconnect} %{time_connect} %{remote_port}|%{remote_ip}\n"
         )
         operations.append(
             options + f"proxy = {json.dumps(probe.proxy.url)}\n"
@@ -491,28 +514,31 @@ def parallel_responses(probes, workers, timeout):
         for line in process.stdout.splitlines():
             if not line.strip():
                 continue
-            index, code, status, connect, seconds, tls_seconds = line.split()
+            fields, _, remote_ip = line.partition(b"|")
+            index, code, status, connect, seconds, tls_seconds, tcp_seconds, remote_port = fields.split()
             index = int(index)
             if index in reports or not 0 <= index < len(probes):
                 raise ValueError("Unexpected curl transfer index")
-            reports[index] = int(code), int(status), int(connect), round(float(seconds) * 1000), float(tls_seconds) > 0
+            reports[index] = ProbeResponse(
+                int(code), int(status), int(connect), round(float(seconds) * 1000),
+                float(tls_seconds) > 0, float(tcp_seconds) > 0,
+                remote_ip.decode("ascii"), int(remote_port), b"",
+            )
         pending = []
         for index, probe in enumerate(probes):
             report = reports.get(index)
-            if report is None or report[0] in (23, 27, 42) or (report[0] == 43 and len(probes) > 1):
+            if report is None or report.curl_code in (23, 27, 42) or (report.curl_code == 43 and len(probes) > 1):
                 pending.append(probe)
                 continue
-            code, status, connect, latency, tls_established = report
-            body = b""
-            if code == 0 and 200 <= status < 300:
+            if report.curl_code == 0 and 200 <= report.status < 300:
                 path = Path(directory) / f"{index}.body"
                 try:
                     with path.open("rb") as file:
-                        body = file.read(MAX_PROBE_BYTES + 1)
+                        report = replace(report, body=file.read(MAX_PROBE_BYTES + 1))
                 except FileNotFoundError:
                     # A successful response with no body can leave no file.
                     pass
-            yield probe, ProbeResponse(code, status, connect, latency, tls_established, body)
+            yield probe, report
 
     if not pending:
         return
@@ -533,27 +559,45 @@ def parallel_responses(probes, workers, timeout):
         yield from parallel_responses(pending[start:start + retry_size], retry_workers, timeout)
 
 
+def connected_to_proxy(proxy, response):
+    if response.remote_port != proxy.port or not response.remote_ip:
+        return False
+    if response.remote_ip == proxy.host:
+        return True
+    try:
+        return str(public_ip(response.remote_ip)) == proxy.host
+    except ValueError:
+        return False
+
+
 def check_response(probe, response, database, direct_ips):
     if response.status == 407 or response.connect_status >= 400:
         return None, "http_status"
 
     if response.curl_code == 0 and 200 <= response.status < 300:
+        if not connected_to_proxy(probe.proxy, response):
+            return None, "wrong_peer"
         try:
-            ip = probe_exit_ip(response.body, probe.callback)
+            ip = probe_exit_ip(response.body, probe.target, probe.challenge)
         except ValueError:
             pass
         else:
+            if ip is None:
+                country = database.country(ip_address(probe.proxy.host))
+                return Check(probe.proxy, probe.mode, None, country, response.latency_ms, "http_echo"), None
             if ip in direct_ips:
                 return None, "runner_ip"
             return Check(probe.proxy, probe.mode, str(ip), database.country(ip), response.latency_ms), None
 
     if (
-        probe.mode != "forward"
+        probe.target.startswith("https://")
         and response.tls_established
         and 200 <= response.status < 600
     ):
+        if not connected_to_proxy(probe.proxy, response):
+            return None, "wrong_peer"
         country = database.country(ip_address(probe.proxy.host))
-        return Check(probe.proxy, probe.mode, None, country, response.latency_ms), None
+        return Check(probe.proxy, probe.mode, None, country, response.latency_ms, "https_response"), None
 
     if response.curl_code == 28:
         return None, "timeout"
@@ -562,6 +606,30 @@ def check_response(probe, response, database, direct_ips):
     if response.curl_code not in (0, 63):
         return None, "connection"
     return None, "invalid_response"
+
+
+def alternate_target(probe, response, targets, attempt):
+    if attempt == 2 or 407 in (response.status, response.connect_status):
+        return None
+    reached_proxy = (
+        response.status or response.connect_status or response.tls_established
+        or (response.tcp_connected and response.curl_code in (28, 35, 52, 56, 97))
+    )
+    if not reached_proxy:
+        return None
+    http_echo = HTTP_ECHO_URL if HTTP_ECHO_URL in targets["http"] else None
+    if probe.mode == "forward":
+        return http_echo if attempt == 0 else None
+    if not probe.target.startswith("https://"):
+        return None
+    https_targets = targets["https"]
+    next_index = https_targets.index(probe.target) + 1
+    if probe.mode == "tunnel" and not response.tls_established and (attempt or next_index == len(https_targets)):
+        if http_echo is not None:
+            return http_echo
+    if next_index < len(https_targets):
+        return https_targets[next_index]
+    return None
 
 
 def check_all(proxies, workers, timeout, database, targets, direct_ips, *, retry_timeout=False):
@@ -579,30 +647,22 @@ def check_all(proxies, workers, timeout, database, targets, direct_ips, *, retry
             else:
                 probes.append(new_probe(proxy, "tunnel", https_targets[0]))
 
-        retries = []
-        for probe, response in parallel_responses(probes, workers, timeout):
-            result, reason = check_response(probe, response, database, direct_ips)
-            if result is not None:
-                checks.append(result)
-            elif (
-                probe.mode != "forward"
-                and len(https_targets) > 1
-                and reason != "runner_ip"
-                and 407 not in (response.status, response.connect_status)
-                and (response.tls_established or response.status or 200 <= response.connect_status < 300)
-            ):
-                retries.append(new_probe(probe.proxy, probe.mode, https_targets[1]))
-            elif retry_timeout and reason == "timeout":
-                retries.append(new_probe(probe.proxy, probe.mode, probe.target))
-            else:
+        for attempt in range(3):
+            if not probes:
+                break
+            retries = []
+            deadline = max(timeout, 8) if attempt else timeout
+            for probe, response in parallel_responses(probes, workers, deadline):
+                result, reason = check_response(probe, response, database, direct_ips)
+                if result is not None:
+                    checks.append(replace(result, used_alternate=bool(attempt)))
+                    continue
+                alternate = alternate_target(probe, response, targets, attempt)
+                if alternate is not None or (attempt == 0 and retry_timeout and reason == "timeout"):
+                    retries.append(new_probe(probe.proxy, probe.mode, alternate or probe.target))
+                    continue
                 failures[reason] += 1
-
-        for probe, response in parallel_responses(retries, workers, timeout):
-            result, reason = check_response(probe, response, database, direct_ips)
-            if result is not None:
-                checks.append(result)
-            else:
-                failures[reason] += 1
+            probes = retries
         completed += len(batch)
         print(f"تست‌شده {completed:,}/{len(proxies):,}، آزمون موفق {len(checks):,}", flush=True)
     return checks, failures
@@ -620,17 +680,24 @@ def write_snapshot(root, checks, manifest):
     rows = []
     with_exit_ip = set()
     without_exit_ip = set()
+    https_responses = set()
+    primary_successes = set()
     for check in sorted(checks, key=lambda item: (item.latency_ms, item.proxy.url, item.mode)):
         url, protocol, country = check.proxy.url, check.proxy.scheme, check.country
         if check.exit_ip is None:
             without_exit_ip.add(url)
         else:
             with_exit_ip.add(url)
+        if check.verification == "https_response":
+            https_responses.add(url)
+        if not check.used_alternate:
+            primary_successes.add(url)
         rows.append({
             "proxy": url, "protocol": protocol, "mode": check.mode,
             "exit_ip": check.exit_ip, "country": country,
             "country_source": "proxy_ip" if check.exit_ip is None else "exit_ip",
             "latency_ms": check.latency_ms,
+            "verification": check.verification, "used_alternate": check.used_alternate,
         })
         for path in (
             "all.txt", f"protocols/{protocol}.txt", f"modes/{protocol}-{check.mode}.txt",
@@ -647,7 +714,10 @@ def write_snapshot(root, checks, manifest):
     json_file(root / "manifest.json", {
         **SCHEMA, **manifest,
         "working_proxies": len(lists["all.txt"]),
-        "https_response_only_proxies": len(without_exit_ip - with_exit_ip),
+        "working_endpoints": len({(check.proxy.host, check.proxy.port) for check in checks}),
+        "https_response_only_proxies": len(https_responses - with_exit_ip),
+        "proxies_without_exit_ip": len(without_exit_ip - with_exit_ip),
+        "recovered_proxies": len(lists["all.txt"]) - len(primary_successes),
         "successful_probes": len(checks),
         "countries": {code: len(lists[f"countries/{code}/all.txt"]) for code in countries},
     })
@@ -718,6 +788,7 @@ def main():
             "finished_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             "country_database": {"source": database_source, "credit": "IP Geolocation by DB-IP"},
             "tested_candidates": len(selected),
+            "tested_endpoints": len({(proxy.host, proxy.port) for proxy in selected}),
             "probe_failures": dict(failures),
             **collection_stats,
         })

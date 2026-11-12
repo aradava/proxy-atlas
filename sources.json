@@ -3,7 +3,11 @@
     "publisher": "ProxyScrape",
     "homepage": "https://github.com/ProxyScrape/free-proxy-list",
     "feeds": [
-      {"url": "https://raw.githubusercontent.com/ProxyScrape/free-proxy-list/main/proxies/all/data.txt"}
+      {"url": "https://raw.githubusercontent.com/ProxyScrape/free-proxy-list/main/proxies/all/data.txt"},
+      {"url": "https://api.proxyscrape.com/v4/free-proxy-list/get?request=display_proxies&proxy_format=protocolipport&format=text"},
+      {"url": "https://api.proxyscrape.com/v2/?request=getproxies&protocol=http&timeout=10000&country=all", "protocol": "http"},
+      {"url": "https://api.proxyscrape.com/v2/?request=getproxies&protocol=socks4&timeout=10000&country=all", "protocol": "socks4"},
+      {"url": "https://api.proxyscrape.com/v2/?request=getproxies&protocol=socks5&timeout=10000&country=all", "protocol": "socks5"}
     ]
   },
   {

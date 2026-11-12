@@ -147,9 +147,12 @@ jobs:
           print(f"- نامزدها از سالم‌های آخرین تست اصلی: {data['previous_candidates']:,}")
           print(f"- نامزدهایی که فقط در آخرین تست اصلی بودند: {data['previous_only_candidates']:,}")
           print(f"- خطاهای دریافت منابع: {sum(bool(s['error']) for s in data['sources'])}")
-          print(f"- نامزدهای تست‌شده: {data['tested_candidates']:,}")
-          print(f"- پروکسی‌های سالم: {data['working_proxies']:,}")
-          print(f"- تأییدشده با پاسخ HTTPS، بدون IP خروجی ثبت‌شده: {data['https_response_only_proxies']:,}")
+          print(f"- ترکیب‌های آدرس، پورت و پروتکل تست‌شده: {data['tested_candidates']:,}")
+          print(f"- آدرس و پورت متمایز تست‌شده: {data['tested_endpoints']:,}")
+          print(f"- آدرس‌های سالم با پروتکل تأییدشده: {data['working_proxies']:,}")
+          print(f"- آدرس و پورت سالم متمایز: {data['working_endpoints']:,}")
+          print(f"- پروکسی‌هایی که در تلاش‌های بعدی تأیید شدند: {data['recovered_proxies']:,}")
+          print(f"- تأییدشده بدون IP خروجی ثبت‌شده: {data['proxies_without_exit_ip']:,}")
           print(f"- گروه‌های جغرافیایی: {len(data['countries'])}")
           labels = {
               "timeout": "پایان مهلت",
@@ -157,6 +160,7 @@ jobs:
               "http_status": "کد HTTP ناموفق",
               "invalid_response": "پاسخ نامعتبر",
               "runner_ip": "پاسخ با IP رانر",
+              "wrong_peer": "اتصال به آدرس یا پورت دیگری برقرار شد",
           }
           for reason, count in sorted(data.get("probe_failures", {}).items()):
               print(f"- آزمون‌های ردشده ({labels.get(reason, reason)}): {count:,}")

@@ -144,6 +144,7 @@ def merge(args):
     checks = []
     failures = Counter()
     tested = 0
+    endpoints = set()
     for shard, size in enumerate(plan["shard_sizes"]):
         report = read_json(args.reports / f"check-{shard}.json")
         if report["plan_id"] != plan["id"] or report["shard"] != shard or report["tested_candidates"] != size:
@@ -151,6 +152,7 @@ def merge(args):
         tested += report["tested_candidates"]
         failures.update(report.get("probe_failures", {}))
         candidates = set(read_shard(args.plan, shard, size))
+        endpoints.update((proxy.host, proxy.port) for proxy in candidates)
         seen = set()
         for row in report["checks"]:
             proxy = prox.Proxy(**row.pop("proxy"))
@@ -167,6 +169,7 @@ def merge(args):
         **plan["manifest"],
         "finished_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "tested_candidates": tested,
+        "tested_endpoints": len(endpoints),
         "probe_failures": dict(failures),
     })
 
