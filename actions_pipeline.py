@@ -117,10 +117,10 @@ def check(args):
     if None in proxies or len(set(proxies)) != len(proxies) or len(proxies) != plan["shard_sizes"][args.shard]:
         raise ValueError(f"Invalid candidate list for shard {args.shard}")
 
-    prox.check_targets(prox.DEFAULT_TIMEOUT)
+    direct_ips = prox.check_targets(prox.DEFAULT_TIMEOUT)
     started = datetime.fromisoformat(plan["manifest"]["started_at_utc"])
     database, _ = prox.load_country_database(started, args.plan / COUNTRY_FILE)
-    checks = prox.check_all(proxies, prox.DEFAULT_WORKERS, prox.DEFAULT_TIMEOUT, database)
+    checks = prox.check_all(proxies, prox.DEFAULT_WORKERS, prox.DEFAULT_TIMEOUT, database, direct_ips)
     if not checks:
         prox.check_targets(prox.DEFAULT_TIMEOUT)
     prox.json_file(args.report, {

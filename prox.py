@@ -318,17 +318,20 @@ def probe_ip(scheme, timeout, proxy=None):
 
 
 def check_targets(timeout):
+    direct_ips = set()
     for scheme in PROBE_URLS:
         for attempt in range(2):
             try:
-                probe_ip(scheme, max(10, timeout))
+                ip, _ = probe_ip(scheme, max(10, timeout))
+                direct_ips.add(ip)
                 break
             except (ValueError, subprocess.TimeoutExpired) as error:
                 if attempt == 1:
                     raise ValueError(f"آزمون مستقیم مقصد {scheme.upper()} ناموفق بود ({error})") from error
+    return frozenset(direct_ips)
 
 
-def check_proxy(proxy, timeout, database):
+def check_proxy(proxy, timeout, database, direct_ips):
     modes = [("https", "connect" if proxy.scheme in WEB_PROXIES else "tunnel")]
     if proxy.scheme in WEB_PROXIES:
         modes.append(("http", "forward"))
@@ -338,13 +341,15 @@ def check_proxy(proxy, timeout, database):
             ip, latency = probe_ip(scheme, timeout, proxy)
         except (ValueError, subprocess.TimeoutExpired):
             continue
+        if ip in direct_ips:
+            continue
         checks.append(Check(proxy, mode, str(ip), database.country(ip), latency))
     return checks
 
 
-def check_all(proxies, workers, timeout, database):
+def check_all(proxies, workers, timeout, database, direct_ips):
     def check(proxy):
-        return check_proxy(proxy, timeout, database)
+        return check_proxy(proxy, timeout, database, direct_ips)
 
     checks = []
     remaining = iter(proxies)
@@ -446,12 +451,12 @@ def main():
     try:
         require_curl()
         feeds = load_feeds(args.sources)
-        check_targets(args.timeout)
+        direct_ips = check_targets(args.timeout)
         database, database_source = load_country_database(started, args.country_db)
         by_publisher, candidates, collection_stats = collect(feeds, args.output / "all.txt")
         selected = select_candidates(by_publisher, candidates, args.limit, started)
         print(f"بررسی {len(selected):,} از {len(candidates):,} نامزد یکتا", flush=True)
-        checks = check_all(selected, args.workers, args.timeout, database)
+        checks = check_all(selected, args.workers, args.timeout, database, direct_ips)
         if not checks:
             check_targets(args.timeout)
         publish_snapshot(args.output, checks, {
