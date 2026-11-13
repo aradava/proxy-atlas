@@ -5,7 +5,7 @@
 <h1 align="center" dir="rtl">ProxyAtlas · اطلس پروکسی</h1>
 
 <p align="center" dir="rtl">
-  فهرست پروکسی‌های عمومی را از چندین منبع جمع می‌کنیم و به تفکیک کشور و پروتکل منتشر می‌کنیم.
+  پروکسی‌های عمومی را از چندین منبع جمع می‌کنیم، با موتور رسمی ProxyScrape می‌سنجیم و موارد تأییدشده را به تفکیک کشور و پروتکل منتشر می‌کنیم.
 </p>
 
 <p align="center" dir="rtl">
@@ -17,8 +17,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/aradava/proxy-atlas/actions/workflows/proxies.yml"><img src="https://github.com/aradava/proxy-atlas/actions/workflows/proxies.yml/badge.svg?branch=main" alt="وضعیت گردآوری"></a>
-  <a href="results/manifest.json"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Faradava%2Fproxy-atlas%2Fmain%2Fresults%2Fmanifest.json&amp;query=%24.collected_proxies&amp;label=collected&amp;color=0D9488&amp;labelColor=0B2137&amp;style=flat-square" alt="شمار پروکسی‌های گردآوری‌شده در آخرین انتشار"></a>
+  <a href="https://github.com/aradava/proxy-atlas/actions/workflows/proxies.yml"><img src="https://github.com/aradava/proxy-atlas/actions/workflows/proxies.yml/badge.svg?branch=main" alt="وضعیت گردآوری و تست"></a>
+  <a href="results/manifest.json"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Faradava%2Fproxy-atlas%2Fmain%2Fresults%2Fmanifest.json&amp;query=%24.working_proxies&amp;label=verified&amp;color=0D9488&amp;labelColor=0B2137&amp;style=flat-square" alt="شمار پروکسی‌های تأییدشده در آخرین انتشار"></a>
 </p>
 
 <div dir="rtl">
@@ -30,18 +30,18 @@
 | [همهٔ پروکسی‌ها](https://raw.githubusercontent.com/aradava/proxy-atlas/main/results/all.txt) | یک آدرس `protocol://IP:port` در هر سطر |
 | [کشورها](results/countries) | فهرست هر کشور بر اساس IP سرور پروکسی |
 | [پروتکل‌ها](results/protocols) | [HTTP](results/protocols/http.txt) · [HTTPS](results/protocols/https.txt) · [SOCKS4](results/protocols/socks4.txt) · [SOCKS4a](results/protocols/socks4a.txt) · [SOCKS5](results/protocols/socks5.txt) · [SOCKS5h](results/protocols/socks5h.txt) |
-| [خروجی JSON](results/proxies.json) | آدرس، پروتکل اعلام‌شده و کشور سرور |
-| [گزارش آخرین انتشار](results/manifest.json) | زمان گردآوری، شمار آدرس‌ها، تفکیک کشورها و وضعیت دریافت هر منبع |
+| [خروجی JSON](results/proxies.json) | آدرس، پروتکل تأییدشده و کشور سرور |
+| [گزارش آخرین انتشار](results/manifest.json) | شمار آدرس‌های گردآوری‌شده، تست‌شده و تأییدشده، زمان بسته‌ها و وضعیت فیدها |
 
 ## از فید تا فهرست عمومی
 
 1. **دریافت منابع.** آدرس‌ها از فایل‌های متنی، JSON، CSV و جدول‌های عمومی خوانده می‌شوند. برای خطاهای موقت دانلود دوباره تلاش می‌کنیم. گزارش هر اجرا فیدهای خالی، خطاهای دانلود و خطاهای قالب را جداگانه نشان می‌دهد. [منابع پروژه](sources.json)
-2. **حذف تکراری‌ها و دسته‌بندی.** هر ترکیب IP، پورت و پروتکل اعلام‌شده یک‌بار در فهرست می‌آید. کشور با استفاده از IP سرور و پایگاه DB-IP تعیین می‌شود.
-3. **انتشار.** خروجی همان نوبت گردآوری جای فهرست قبلی را می‌گیرد. وضعیت اتصال و تازگی هر آدرس به داده‌های منبع بستگی دارد. [فهرست منتشرشده](results/)
+2. **تست اتصال.** همهٔ ترکیب‌های یکتای IP، پورت و پروتکل با موتور رسمی ProxyScrape روی حداکثر ۲۰ رانر لینوکس بررسی می‌شوند. هر رانر تا ۵۰۰ اتصال هم‌زمان دارد و مهلت هر بررسی ۶ ثانیه است. [موتور ProxyScrape](https://github.com/ProxyScrape/proxyscrape-proxy-checker)
+3. **انتشار.** پس از تکمیل همهٔ بسته‌ها، پروکسی‌های تأییدشدهٔ همان اجرا جای فهرست قبلی را می‌گیرند. کشور با استفاده از IP سرور و پایگاه DB-IP تعیین می‌شود. [فهرست منتشرشده](results/)
 
-## گردآوری هر ۹۰ دقیقه
+## گردآوری و تست هر ۹۰ دقیقه
 
-Cloudflare هر ۹۰ دقیقه گردآوری کامل را در GitHub Actions ثبت می‌کند. اجراهای دستی و خودکار به‌نوبت از یک صف عبور می‌کنند. [گردش‌کار گردآوری](https://github.com/aradava/proxy-atlas/actions/workflows/proxies.yml)
+Cloudflare هر ۹۰ دقیقه گردآوری و تست کامل را در GitHub Actions ثبت می‌کند. اجراهای دستی و خودکار به‌نوبت از یک صف عبور می‌کنند. [گردش‌کار گردآوری و تست](https://github.com/aradava/proxy-atlas/actions/workflows/proxies.yml)
 
 ---
 

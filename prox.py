@@ -322,6 +322,7 @@ def json_file(path, data):
 
 def write_snapshot(root, proxies, database, manifest):
     lists = defaultdict(list)
+    lists["all.txt"] = []
     for protocol in PROTOCOLS:
         lists[f"protocols/{protocol}.txt"] = []
     endpoints = set()
