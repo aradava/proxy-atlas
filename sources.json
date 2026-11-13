@@ -14,7 +14,9 @@
       {"url": "https://raw.githubusercontent.com/ProxyScrape/free-proxy-list/main/proxies/countries/ru/data.txt"},
       {"url": "https://raw.githubusercontent.com/ProxyScrape/free-proxy-list/main/proxies/countries/jp/data.txt"},
       {"url": "https://raw.githubusercontent.com/ProxyScrape/free-proxy-list/main/proxies/countries/sg/data.txt"},
-      {"url": "https://raw.githubusercontent.com/ProxyScrape/free-proxy-list/main/proxies/countries/in/data.txt"}
+      {"url": "https://raw.githubusercontent.com/ProxyScrape/free-proxy-list/main/proxies/countries/in/data.txt"},
+      {"url": "https://raw.githubusercontent.com/ProxyScrape/free-proxy-list/main/proxies/protocols/socks5/data.txt"},
+      {"url": "https://raw.githubusercontent.com/ProxyScrape/free-proxy-list/main/proxies/protocols/socks4/data.txt"}
     ]
   },
   {
@@ -30,7 +32,9 @@
       {"url": "https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/countries/SG/data.txt"},
       {"url": "https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/countries/CA/data.txt"},
       {"url": "https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/countries/AE/data.txt"},
-      {"url": "https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/countries/AU/data.txt"}
+      {"url": "https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/countries/AU/data.txt"},
+      {"url": "https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/protocols/http/data.txt"},
+      {"url": "https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/protocols/https/data.txt"}
     ]
   },
   {
@@ -44,7 +48,8 @@
     "publisher": "stormsia",
     "homepage": "https://stormsia.github.io/proxy-list/",
     "feeds": [
-      {"url": "https://stormsia.github.io/proxy-list/proxies.json", "format": "json"}
+      {"url": "https://stormsia.github.io/proxy-list/proxies.json", "format": "json"},
+      {"url": "https://raw.githubusercontent.com/stormsia/proxy-list/main/working_proxies.txt"}
     ]
   },
   {
@@ -205,7 +210,9 @@
     "feeds": [
       {"url": "https://raw.githubusercontent.com/litportnet/free-proxy-list/live/proxies/http.txt", "protocol": "http"},
       {"url": "https://raw.githubusercontent.com/litportnet/free-proxy-list/live/proxies/socks4.txt", "protocol": "socks4"},
-      {"url": "https://raw.githubusercontent.com/litportnet/free-proxy-list/live/proxies/socks5.txt", "protocol": "socks5"}
+      {"url": "https://raw.githubusercontent.com/litportnet/free-proxy-list/live/proxies/socks5.txt", "protocol": "socks5"},
+      {"url": "https://raw.githubusercontent.com/litportnet/free-proxy-list/main/proxies/https.txt", "protocol": "https"},
+      {"url": "https://raw.githubusercontent.com/litportnet/free-proxy-list/main/proxies/all.txt"}
     ]
   },
   {
@@ -254,7 +261,8 @@
     "publisher": "Proxy-Free",
     "homepage": "https://github.com/proxy-free/free-proxy-list",
     "feeds": [
-      {"url": "https://raw.githubusercontent.com/proxy-free/free-proxy-list/main/proxies.json", "format": "json"}
+      {"url": "https://raw.githubusercontent.com/proxy-free/free-proxy-list/main/proxies.json", "format": "json"},
+      {"url": "https://raw.githubusercontent.com/proxy-free/free-proxy-list/main/socks5.txt", "protocol": "socks5"}
     ]
   },
   {
@@ -274,7 +282,11 @@
       {"url": "https://raw.githubusercontent.com/xyzs996/free-proxy-health-list/main/proxies/protocols/http/data.txt", "protocol": "http"},
       {"url": "https://raw.githubusercontent.com/xyzs996/free-proxy-health-list/main/proxies/protocols/https/data.txt", "protocol": "https"},
       {"url": "https://raw.githubusercontent.com/xyzs996/free-proxy-health-list/main/proxies/protocols/socks4/data.txt", "protocol": "socks4"},
-      {"url": "https://raw.githubusercontent.com/xyzs996/free-proxy-health-list/main/proxies/protocols/socks5/data.txt", "protocol": "socks5"}
+      {"url": "https://raw.githubusercontent.com/xyzs996/free-proxy-health-list/main/proxies/protocols/socks5/data.txt", "protocol": "socks5"},
+      {"url": "https://raw.githubusercontent.com/xyzs996/free-proxy-health-list/main/http.txt", "protocol": "http"},
+      {"url": "https://raw.githubusercontent.com/xyzs996/free-proxy-health-list/main/https.txt", "protocol": "https"},
+      {"url": "https://raw.githubusercontent.com/xyzs996/free-proxy-health-list/main/socks5.txt", "protocol": "socks5"},
+      {"url": "https://raw.githubusercontent.com/xyzs996/free-proxy-health-list/main/socks4.txt", "protocol": "socks4"}
     ]
   },
   {
@@ -283,7 +295,8 @@
     "feeds": [
       {"url": "https://raw.githubusercontent.com/relayglass/free-proxy-list/main/protocol/http/http.txt", "protocol": "http"},
       {"url": "https://raw.githubusercontent.com/relayglass/free-proxy-list/main/protocol/socks4/socks4.txt", "protocol": "socks4"},
-      {"url": "https://raw.githubusercontent.com/relayglass/free-proxy-list/main/protocol/socks5/socks5.txt", "protocol": "socks5"}
+      {"url": "https://raw.githubusercontent.com/relayglass/free-proxy-list/main/protocol/socks5/socks5.txt", "protocol": "socks5"},
+      {"url": "https://raw.githubusercontent.com/relayglass/free-proxy-list/main/protocol/https/https.txt", "protocol": "https"}
     ]
   },
   {
@@ -293,7 +306,14 @@
       {"url": "https://proxylist.geonode.com/api/proxy-list?limit=500&page=1&sort_by=lastChecked&sort_type=desc&protocols=http", "protocol": "http", "format": "json"},
       {"url": "https://proxylist.geonode.com/api/proxy-list?limit=500&page=1&sort_by=lastChecked&sort_type=desc&protocols=https", "protocol": "https", "format": "json"},
       {"url": "https://proxylist.geonode.com/api/proxy-list?limit=500&page=1&sort_by=lastChecked&sort_type=desc&protocols=socks4", "protocol": "socks4", "format": "json"},
-      {"url": "https://proxylist.geonode.com/api/proxy-list?limit=500&page=1&sort_by=lastChecked&sort_type=desc&protocols=socks5", "protocol": "socks5", "format": "json"}
+      {"url": "https://proxylist.geonode.com/api/proxy-list?limit=500&page=1&sort_by=lastChecked&sort_type=desc&protocols=socks5", "protocol": "socks5", "format": "json"},
+      {"url": "https://proxylist.geonode.com/api/proxy-list?limit=500&page=2&sort_by=lastChecked&sort_type=desc&protocols=http", "protocol": "http", "format": "json"},
+      {"url": "https://proxylist.geonode.com/api/proxy-list?limit=500&page=3&sort_by=lastChecked&sort_type=desc&protocols=http", "protocol": "http", "format": "json"},
+      {"url": "https://proxylist.geonode.com/api/proxy-list?limit=500&page=4&sort_by=lastChecked&sort_type=desc&protocols=http", "protocol": "http", "format": "json"},
+      {"url": "https://proxylist.geonode.com/api/proxy-list?limit=500&page=2&sort_by=lastChecked&sort_type=desc&protocols=https", "protocol": "https", "format": "json"},
+      {"url": "https://proxylist.geonode.com/api/proxy-list?limit=500&page=2&sort_by=lastChecked&sort_type=desc&protocols=socks4", "protocol": "socks4", "format": "json"},
+      {"url": "https://proxylist.geonode.com/api/proxy-list?limit=500&page=2&sort_by=lastChecked&sort_type=desc&protocols=socks5", "protocol": "socks5", "format": "json"},
+      {"url": "https://proxylist.geonode.com/api/proxy-list?limit=500&page=3&sort_by=lastChecked&sort_type=desc&protocols=socks5", "protocol": "socks5", "format": "json"}
     ]
   },
   {
@@ -312,7 +332,8 @@
     "feeds": [
       {"url": "https://raw.githubusercontent.com/iplocate/free-proxy-list/main/protocols/http.txt", "protocol": "http"},
       {"url": "https://raw.githubusercontent.com/iplocate/free-proxy-list/main/protocols/socks4.txt", "protocol": "socks4"},
-      {"url": "https://raw.githubusercontent.com/iplocate/free-proxy-list/main/protocols/socks5.txt", "protocol": "socks5"}
+      {"url": "https://raw.githubusercontent.com/iplocate/free-proxy-list/main/protocols/socks5.txt", "protocol": "socks5"},
+      {"url": "https://raw.githubusercontent.com/iplocate/free-proxy-list/main/all-proxies.txt"}
     ]
   },
   {
@@ -340,7 +361,10 @@
       {"url": "https://raw.githubusercontent.com/zloi-user/hideip.me/main/https.txt", "protocol": "https", "format": "text-with-country"},
       {"url": "https://raw.githubusercontent.com/zloi-user/hideip.me/main/socks4.txt", "protocol": "socks4", "format": "text-with-country"},
       {"url": "https://raw.githubusercontent.com/zloi-user/hideip.me/main/socks5.txt", "protocol": "socks5", "format": "text-with-country"},
-      {"url": "https://raw.githubusercontent.com/zloi-user/hideip.me/main/connect.txt", "protocol": "http", "format": "text-with-country"}
+      {"url": "https://raw.githubusercontent.com/zloi-user/hideip.me/main/connect.txt", "protocol": "http", "format": "text-with-country"},
+      {"url": "https://raw.githubusercontent.com/zloi-user/hideip.me/master/connect.txt", "protocol": "http", "format": "text-with-country"},
+      {"url": "https://raw.githubusercontent.com/zloi-user/hideip.me/master/https.txt", "protocol": "https", "format": "text-with-country"},
+      {"url": "https://raw.githubusercontent.com/zloi-user/hideip.me/master/socks5.txt", "protocol": "socks5", "format": "text-with-country"}
     ]
   },
   {
@@ -377,7 +401,8 @@
     "feeds": [
       {"url": "https://raw.githubusercontent.com/dpangestuw/Free-PROXY/main/http_proxies.txt", "protocol": "http"},
       {"url": "https://raw.githubusercontent.com/dpangestuw/Free-PROXY/main/socks4_proxies.txt", "protocol": "socks4"},
-      {"url": "https://raw.githubusercontent.com/dpangestuw/Free-PROXY/main/socks5_proxies.txt", "protocol": "socks5"}
+      {"url": "https://raw.githubusercontent.com/dpangestuw/Free-PROXY/main/socks5_proxies.txt", "protocol": "socks5"},
+      {"url": "https://raw.githubusercontent.com/dpangestuw/Free-Proxy/main/All_proxies.txt"}
     ]
   },
   {
@@ -386,7 +411,8 @@
     "feeds": [
       {"url": "https://raw.githubusercontent.com/dinoz0rg/proxy-list/main/checked_proxies/http.txt", "protocol": "http"},
       {"url": "https://raw.githubusercontent.com/dinoz0rg/proxy-list/main/checked_proxies/socks4.txt", "protocol": "socks4"},
-      {"url": "https://raw.githubusercontent.com/dinoz0rg/proxy-list/main/checked_proxies/socks5.txt", "protocol": "socks5"}
+      {"url": "https://raw.githubusercontent.com/dinoz0rg/proxy-list/main/checked_proxies/socks5.txt", "protocol": "socks5"},
+      {"url": "https://raw.githubusercontent.com/dinoz0rg/proxy-list/main/scraped_proxies/socks4.txt", "protocol": "socks4"}
     ]
   },
   {
@@ -428,7 +454,8 @@
     "publisher": "Vann-Dev",
     "homepage": "https://github.com/Vann-Dev/proxy-list",
     "feeds": [
-      {"url": "https://raw.githubusercontent.com/Vann-Dev/proxy-list/main/proxies/http.txt", "protocol": "http"}
+      {"url": "https://raw.githubusercontent.com/Vann-Dev/proxy-list/main/proxies/http.txt", "protocol": "http"},
+      {"url": "https://raw.githubusercontent.com/Vann-Dev/proxy-list/main/proxies/https.txt", "protocol": "https"}
     ]
   },
   {
@@ -437,7 +464,8 @@
     "feeds": [
       {"url": "https://raw.githubusercontent.com/VPSLabCloud/VPSLab-Free-Proxy-List/main/http_all.txt", "protocol": "http"},
       {"url": "https://raw.githubusercontent.com/VPSLabCloud/VPSLab-Free-Proxy-List/main/socks4_all.txt", "protocol": "socks4"},
-      {"url": "https://raw.githubusercontent.com/VPSLabCloud/VPSLab-Free-Proxy-List/main/socks5_all.txt", "protocol": "socks5"}
+      {"url": "https://raw.githubusercontent.com/VPSLabCloud/VPSLab-Free-Proxy-List/main/socks5_all.txt", "protocol": "socks5"},
+      {"url": "https://raw.githubusercontent.com/VPSLabCloud/VPSLab-Free-Proxy-List/main/http_transparent.txt", "protocol": "http"}
     ]
   },
   {
@@ -456,7 +484,8 @@
       {"url": "https://raw.githubusercontent.com/vmheaven/VMHeaven.io-Free-Proxy-List/main/http.txt", "protocol": "http"},
       {"url": "https://raw.githubusercontent.com/vmheaven/VMHeaven.io-Free-Proxy-List/main/https.txt", "protocol": "https"},
       {"url": "https://raw.githubusercontent.com/vmheaven/VMHeaven.io-Free-Proxy-List/main/socks4.txt", "protocol": "socks4"},
-      {"url": "https://raw.githubusercontent.com/vmheaven/VMHeaven.io-Free-Proxy-List/main/socks5.txt", "protocol": "socks5"}
+      {"url": "https://raw.githubusercontent.com/vmheaven/VMHeaven.io-Free-Proxy-List/main/socks5.txt", "protocol": "socks5"},
+      {"url": "https://raw.githubusercontent.com/vmheaven/VMHeaven.io-Free-Proxy-List/main/allproxy.txt"}
     ]
   },
   {
@@ -513,7 +542,11 @@
     "homepage": "https://github.com/z3a4/free-proxy-list",
     "feeds": [
       {"url": "https://raw.githubusercontent.com/z3a4/free-proxy-list/main/proxies/checked/protocols/http/http-proxies.txt", "protocol": "http"},
-      {"url": "https://raw.githubusercontent.com/z3a4/free-proxy-list/main/proxies/checked/protocols/https/https-proxies.txt", "protocol": "https"}
+      {"url": "https://raw.githubusercontent.com/z3a4/free-proxy-list/main/proxies/checked/protocols/https/https-proxies.txt", "protocol": "https"},
+      {"url": "https://raw.githubusercontent.com/z3a4/free-proxy-list/main/proxies/unchecked/https-proxies.txt", "protocol": "https"},
+      {"url": "https://raw.githubusercontent.com/z3a4/free-proxy-list/main/proxies/unchecked/socks5-proxies.txt", "protocol": "socks5"},
+      {"url": "https://raw.githubusercontent.com/z3a4/free-proxy-list/main/proxies/unchecked/http-proxies.txt", "protocol": "http"},
+      {"url": "https://raw.githubusercontent.com/z3a4/free-proxy-list/main/proxies/unchecked/socks4-proxies.txt", "protocol": "socks4"}
     ]
   },
   {
@@ -523,7 +556,14 @@
       {"url": "https://raw.githubusercontent.com/proxygenerator1/ProxyGenerator/main/Stable/http.txt", "protocol": "http"},
       {"url": "https://raw.githubusercontent.com/proxygenerator1/ProxyGenerator/main/Stable/https.txt", "protocol": "https"},
       {"url": "https://raw.githubusercontent.com/proxygenerator1/ProxyGenerator/main/Stable/socks4.txt", "protocol": "socks4"},
-      {"url": "https://raw.githubusercontent.com/proxygenerator1/ProxyGenerator/main/Stable/socks5.txt", "protocol": "socks5"}
+      {"url": "https://raw.githubusercontent.com/proxygenerator1/ProxyGenerator/main/Stable/socks5.txt", "protocol": "socks5"},
+      {"url": "https://raw.githubusercontent.com/proxygenerator1/ProxyGenerator/main/ForAnonymity/elite/http.txt", "protocol": "http"},
+      {"url": "https://raw.githubusercontent.com/proxygenerator1/ProxyGenerator/main/Unstable/http.txt", "protocol": "http"},
+      {"url": "https://raw.githubusercontent.com/proxygenerator1/ProxyGenerator/main/ForAnonymity/elite/socks5.txt", "protocol": "socks5"},
+      {"url": "https://raw.githubusercontent.com/proxygenerator1/ProxyGenerator/main/ForAnonymity/elite/socks4.txt", "protocol": "socks4"},
+      {"url": "https://raw.githubusercontent.com/proxygenerator1/ProxyGenerator/main/Unstable/socks4.txt", "protocol": "socks4"},
+      {"url": "https://raw.githubusercontent.com/proxygenerator1/ProxyGenerator/main/Unstable/https.txt", "protocol": "https"},
+      {"url": "https://raw.githubusercontent.com/proxygenerator1/ProxyGenerator/main/ForAnonymity/elite/https.txt", "protocol": "https"}
     ]
   },
   {
@@ -615,7 +655,11 @@
       {"url": "https://raw.githubusercontent.com/Tsprnay/Proxy-lists/master/proxies/http.txt", "protocol": "http"},
       {"url": "https://raw.githubusercontent.com/Tsprnay/Proxy-lists/master/proxies/https.txt", "protocol": "https"},
       {"url": "https://raw.githubusercontent.com/Tsprnay/Proxy-lists/master/proxies/socks4.txt", "protocol": "socks4"},
-      {"url": "https://raw.githubusercontent.com/Tsprnay/Proxy-lists/master/proxies/socks5.txt", "protocol": "socks5"}
+      {"url": "https://raw.githubusercontent.com/Tsprnay/Proxy-lists/master/proxies/socks5.txt", "protocol": "socks5"},
+      {"url": "https://raw.githubusercontent.com/Tsprnay/Proxy-lists/master/proxies/sorted/socks5.txt", "protocol": "socks5"},
+      {"url": "https://raw.githubusercontent.com/Tsprnay/Proxy-lists/master/proxies/sorted/http.txt", "protocol": "http"},
+      {"url": "https://raw.githubusercontent.com/Tsprnay/Proxy-lists/master/proxies/sorted/socks4.txt", "protocol": "socks4"},
+      {"url": "https://raw.githubusercontent.com/Tsprnay/Proxy-lists/master/proxies/sorted/https.txt", "protocol": "https"}
     ]
   },
   {
@@ -764,7 +808,8 @@
     "feeds": [
       {"url": "https://raw.githubusercontent.com/fyvri/fresh-proxy-list/archive/storage/classic/http.txt", "protocol": "http"},
       {"url": "https://raw.githubusercontent.com/fyvri/fresh-proxy-list/archive/storage/classic/socks4.txt", "protocol": "socks4"},
-      {"url": "https://raw.githubusercontent.com/fyvri/fresh-proxy-list/archive/storage/classic/https.txt", "protocol": "https"}
+      {"url": "https://raw.githubusercontent.com/fyvri/fresh-proxy-list/archive/storage/classic/https.txt", "protocol": "https"},
+      {"url": "https://raw.githubusercontent.com/fyvri/fresh-proxy-list/archive/storage/classic/socks5.txt", "protocol": "socks5"}
     ]
   },
   {
@@ -772,7 +817,9 @@
     "homepage": "https://github.com/gnxD3RfTT2WE/github-proxy-list",
     "feeds": [
       {"url": "https://raw.githubusercontent.com/gnxD3RfTT2WE/github-proxy-list/main/socks4.txt", "protocol": "socks4"},
-      {"url": "https://raw.githubusercontent.com/gnxD3RfTT2WE/bulk-socks-proxy-list/main/socks5.txt", "protocol": "socks5"}
+      {"url": "https://raw.githubusercontent.com/gnxD3RfTT2WE/bulk-socks-proxy-list/main/socks5.txt", "protocol": "socks5"},
+      {"url": "https://raw.githubusercontent.com/gnxD3RfTT2WE/free-socks5-proxy-list/main/http.txt", "protocol": "http"},
+      {"url": "https://raw.githubusercontent.com/gnxD3RfTT2WE/mass-http-proxy-list/main/socks5.txt", "protocol": "socks5"}
     ]
   },
   {
@@ -781,7 +828,10 @@
     "feeds": [
       {"url": "https://raw.githubusercontent.com/i-am-unbekannt/BLITZPROXY/main/raw-files/raw-http.txt", "protocol": "http"},
       {"url": "https://raw.githubusercontent.com/i-am-unbekannt/BLITZPROXY/main/raw-files/raw-socks4.txt", "protocol": "socks4"},
-      {"url": "https://raw.githubusercontent.com/i-am-unbekannt/BLITZPROXY/main/raw-files/raw-socks5.txt", "protocol": "socks5"}
+      {"url": "https://raw.githubusercontent.com/i-am-unbekannt/BLITZPROXY/main/raw-files/raw-socks5.txt", "protocol": "socks5"},
+      {"url": "https://raw.githubusercontent.com/i-am-unbekannt/BLITZPROXY/main/out-files/socks5.txt", "protocol": "socks5"},
+      {"url": "https://raw.githubusercontent.com/i-am-unbekannt/BLITZPROXY/main/out-files/http.txt", "protocol": "http"},
+      {"url": "https://raw.githubusercontent.com/i-am-unbekannt/BLITZPROXY/main/out-files/socks4.txt", "protocol": "socks4"}
     ]
   },
   {
@@ -790,7 +840,8 @@
     "feeds": [
       {"url": "https://raw.githubusercontent.com/IPParrot/proxy_ips/main/proxies/http.txt", "protocol": "http"},
       {"url": "https://raw.githubusercontent.com/IPParrot/proxy_ips/main/proxies/socks4.txt", "protocol": "socks4"},
-      {"url": "https://raw.githubusercontent.com/IPParrot/proxy_ips/main/proxies/socks5.txt", "protocol": "socks5"}
+      {"url": "https://raw.githubusercontent.com/IPParrot/proxy_ips/main/proxies/socks5.txt", "protocol": "socks5"},
+      {"url": "https://raw.githubusercontent.com/IPParrot/proxy_ips/main/proxies/https.txt", "protocol": "https"}
     ]
   },
   {
@@ -863,7 +914,8 @@
     "feeds": [
       {"url": "https://raw.githubusercontent.com/trio666/proxy-checker/main/http.txt", "protocol": "http"},
       {"url": "https://raw.githubusercontent.com/trio666/proxy-checker/main/socks4.txt", "protocol": "socks4"},
-      {"url": "https://raw.githubusercontent.com/trio666/proxy-checker/main/socks5.txt", "protocol": "socks5"}
+      {"url": "https://raw.githubusercontent.com/trio666/proxy-checker/main/socks5.txt", "protocol": "socks5"},
+      {"url": "https://raw.githubusercontent.com/trio666/proxy-checker/main/all.txt"}
     ]
   },
   {
@@ -879,7 +931,269 @@
     "feeds": [
       {"url": "https://raw.githubusercontent.com/wyattowalsh/proxywhirl/main/docs/proxy-lists/http.txt", "protocol": "http"},
       {"url": "https://raw.githubusercontent.com/wyattowalsh/proxywhirl/main/docs/proxy-lists/socks4.txt", "protocol": "socks4"},
-      {"url": "https://raw.githubusercontent.com/wyattowalsh/proxywhirl/main/docs/proxy-lists/socks5.txt", "protocol": "socks5"}
+      {"url": "https://raw.githubusercontent.com/wyattowalsh/proxywhirl/main/docs/proxy-lists/socks5.txt", "protocol": "socks5"},
+      {"url": "https://raw.githubusercontent.com/wyattowalsh/proxywhirl/main/docs/proxy-lists/https.txt", "protocol": "https"}
+    ]
+  },
+  {
+    "publisher": "Access-At",
+    "homepage": "https://github.com/Access-At/proxy-list",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/Access-At/proxy-list/main/http.txt", "protocol": "http"}
+    ]
+  },
+  {
+    "publisher": "afrcloud07",
+    "homepage": "https://github.com/afrcloud07/ListProxy",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/afrcloud07/ListProxy/main/proxyip.json", "protocol": "http", "format": "json"}
+    ]
+  },
+  {
+    "publisher": "aQuiner",
+    "homepage": "https://github.com/aQuiner/free-proxy-list",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/aQuiner/free-proxy-list/main/http.txt", "protocol": "http"}
+    ]
+  },
+  {
+    "publisher": "ArteffKod",
+    "homepage": "https://github.com/ArteffKod/socks4",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/ArteffKod/socks4/main/socks4%20proxy", "protocol": "socks4"}
+    ]
+  },
+  {
+    "publisher": "b4mbo-o",
+    "homepage": "https://github.com/b4mbo-o/Check-Free-Proxy",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/b4mbo-o/Check-Free-Proxy/main/alive_socks4.txt", "protocol": "socks4"}
+    ]
+  },
+  {
+    "publisher": "casa-ls",
+    "homepage": "https://github.com/casa-ls/proxy-list",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/casa-ls/proxy-list/main/socks4", "protocol": "socks4"}
+    ]
+  },
+  {
+    "publisher": "casals-ar",
+    "homepage": "https://github.com/casals-ar/proxy-list",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/casals-ar/proxy-list/main/socks5", "protocol": "socks5"}
+    ]
+  },
+  {
+    "publisher": "chekamarue",
+    "homepage": "https://github.com/chekamarue/proxies",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/chekamarue/proxies/main/https.txt", "protocol": "https"},
+      {"url": "https://raw.githubusercontent.com/chekamarue/proxies/main/httpss.txt", "protocol": "https"}
+    ]
+  },
+  {
+    "publisher": "claude89757",
+    "homepage": "https://github.com/claude89757/free_https_proxies",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/claude89757/free_https_proxies/main/https_proxies.txt", "protocol": "https"}
+    ]
+  },
+  {
+    "publisher": "EDT-Pages",
+    "homepage": "https://github.com/EDT-Pages/Proxy-List",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/EDT-Pages/Proxy-List/main/data/socks5.json", "protocol": "socks5", "format": "json"},
+      {"url": "https://raw.githubusercontent.com/EDT-Pages/Proxy-List/main/data/https.json", "protocol": "https", "format": "json"},
+      {"url": "https://raw.githubusercontent.com/EDT-Pages/Proxy-List/main/data/http.json", "protocol": "http", "format": "json"}
+    ]
+  },
+  {
+    "publisher": "FifzzSENZE",
+    "homepage": "https://github.com/FifzzSENZE/Master-Proxy",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/FifzzSENZE/Master-Proxy/master/proxies/socks5.txt", "protocol": "socks5"},
+      {"url": "https://raw.githubusercontent.com/FifzzSENZE/Master-Proxy/master/proxies/http.txt", "protocol": "http"},
+      {"url": "https://raw.githubusercontent.com/FifzzSENZE/Master-Proxy/master/proxies/socks4.txt", "protocol": "socks4"},
+      {"url": "https://raw.githubusercontent.com/FifzzSENZE/Master-Proxy/master/proxies/https.txt", "protocol": "https"}
+    ]
+  },
+  {
+    "publisher": "gitrecon1455",
+    "homepage": "https://github.com/gitrecon1455/fresh-proxy-list",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/gitrecon1455/fresh-proxy-list/main/proxylist.txt", "protocol": "http"}
+    ]
+  },
+  {
+    "publisher": "Hanfeng768",
+    "homepage": "https://github.com/Hanfeng768/CONNECT-IP",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/Hanfeng768/CONNECT-IP/main/output/proxies_20260825_165742.txt", "protocol": "http"}
+    ]
+  },
+  {
+    "publisher": "hendrikbgr",
+    "homepage": "https://github.com/hendrikbgr/Free-Proxy-Repo",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/hendrikbgr/Free-Proxy-Repo/master/proxy_list.txt", "protocol": "http"}
+    ]
+  },
+  {
+    "publisher": "hproxy-com",
+    "homepage": "https://github.com/hproxy-com/free-proxy-list",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/hproxy-com/free-proxy-list/main/https.txt", "protocol": "https"},
+      {"url": "https://raw.githubusercontent.com/hproxy-com/free-proxy-list/main/socks5.txt", "protocol": "socks5"},
+      {"url": "https://raw.githubusercontent.com/hproxy-com/free-proxy-list/main/http.txt", "protocol": "http"},
+      {"url": "https://raw.githubusercontent.com/hproxy-com/free-proxy-list/main/socks4.txt", "protocol": "socks4"}
+    ]
+  },
+  {
+    "publisher": "im-razvan",
+    "homepage": "https://github.com/im-razvan/proxy_list",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/im-razvan/proxy_list/main/socks5.txt", "protocol": "socks5"}
+    ]
+  },
+  {
+    "publisher": "javadbazokar",
+    "homepage": "https://github.com/javadbazokar/PROXY-List",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/javadbazokar/PROXY-List/main/https.txt", "protocol": "https"}
+    ]
+  },
+  {
+    "publisher": "kenzopanel",
+    "homepage": "https://github.com/kenzopanel/Free-Indonesia-Proxy",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/kenzopanel/Free-Indonesia-Proxy/main/proxy.json", "protocol": "http", "format": "json"}
+    ]
+  },
+  {
+    "publisher": "KUTlime",
+    "homepage": "https://github.com/KUTlime/ProxyList",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/KUTlime/ProxyList/main/ProxyList.txt", "protocol": "http"}
+    ]
+  },
+  {
+    "publisher": "LoneKingCode",
+    "homepage": "https://github.com/LoneKingCode/free-proxy-db",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/LoneKingCode/free-proxy-db/main/proxies/http.txt", "protocol": "http"}
+    ]
+  },
+  {
+    "publisher": "lucasjustinudin",
+    "homepage": "https://github.com/lucasjustinudin/Free-HighQuality-Proxy-Socks",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/lucasjustinudin/Free-HighQuality-Proxy-Socks/main/output/by_protocol/http.txt", "protocol": "http"}
+    ]
+  },
+  {
+    "publisher": "Mohammedcha",
+    "homepage": "https://github.com/Mohammedcha/ProxRipper",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/Mohammedcha/ProxRipper/main/full_proxies/https.txt", "protocol": "https"},
+      {"url": "https://raw.githubusercontent.com/Mohammedcha/ProxRipper/main/full_proxies/http.txt", "protocol": "http"}
+    ]
+  },
+  {
+    "publisher": "morawskidotmy",
+    "homepage": "https://github.com/morawskidotmy/youtube-proxies",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/morawskidotmy/youtube-proxies/main/youtube-proxies.txt"}
+    ]
+  },
+  {
+    "publisher": "netafrcloud",
+    "homepage": "https://github.com/netafrcloud/ProxyList",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/netafrcloud/ProxyList/main/proxyip.json", "protocol": "http", "format": "json"}
+    ]
+  },
+  {
+    "publisher": "nffluaefoanr",
+    "homepage": "https://github.com/nffluaefoanr/PROXY-List",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/nffluaefoanr/PROXY-List/master/socks5.txt", "protocol": "socks5"},
+      {"url": "https://raw.githubusercontent.com/nffluaefoanr/PROXY-List/master/socks4.txt", "protocol": "socks4"},
+      {"url": "https://raw.githubusercontent.com/nffluaefoanr/PROXY-List/master/http.txt", "protocol": "http"}
+    ]
+  },
+  {
+    "publisher": "noarche",
+    "homepage": "https://github.com/noarche/proxylist-socks5-sock4-exported-updates",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/noarche/proxylist-socks5-sock4-exported-updates/main/connect-online.txt", "protocol": "https"},
+      {"url": "https://raw.githubusercontent.com/noarche/proxylist-socks5-sock4-exported-updates/main/socks5-online.txt", "protocol": "socks5"},
+      {"url": "https://raw.githubusercontent.com/noarche/proxylist-socks5-sock4-exported-updates/main/socks4-online.txt", "protocol": "socks4"},
+      {"url": "https://raw.githubusercontent.com/noarche/proxylist-socks5-sock4-exported-updates/main/http-online.txt", "protocol": "http"}
+    ]
+  },
+  {
+    "publisher": "noctiro",
+    "homepage": "https://github.com/noctiro/getproxy",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/noctiro/getproxy/master/file/all.txt"}
+    ]
+  },
+  {
+    "publisher": "parserpp",
+    "homepage": "https://github.com/parserpp/ip_ports",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/parserpp/ip_ports/main/proxyinfo.txt", "protocol": "http"}
+    ]
+  },
+  {
+    "publisher": "pwnx0",
+    "homepage": "https://github.com/pwnx0/proxy",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/pwnx0/proxy/main/proxies/source/socks4.txt", "protocol": "socks4"},
+      {"url": "https://raw.githubusercontent.com/pwnx0/proxy/main/proxies/source/https.txt", "protocol": "https"},
+      {"url": "https://raw.githubusercontent.com/pwnx0/proxy/main/proxies/source/socks5.txt", "protocol": "socks5"}
+    ]
+  },
+  {
+    "publisher": "RioMMO",
+    "homepage": "https://github.com/RioMMO/ProxyFree",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/RioMMO/ProxyFree/main/HTTP.txt", "protocol": "http"},
+      {"url": "https://raw.githubusercontent.com/RioMMO/ProxyFree/main/SOCKS4.txt", "protocol": "socks4"}
+    ]
+  },
+  {
+    "publisher": "saisuiu",
+    "homepage": "https://github.com/saisuiu/Lionkings-Http-Proxys-Proxies",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/saisuiu/Lionkings-Http-Proxys-Proxies/main/free.txt", "protocol": "http"}
+    ]
+  },
+  {
+    "publisher": "Socks5Proxies.com",
+    "homepage": "https://github.com/webunblocker/free-proxy-list",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/webunblocker/free-proxy-list/main/proxies/protocols/https/data.txt", "protocol": "https"},
+      {"url": "https://raw.githubusercontent.com/webunblocker/free-proxy-list/main/proxies/protocols/http/data.txt", "protocol": "http"},
+      {"url": "https://raw.githubusercontent.com/webunblocker/free-proxy-list/main/proxies/protocols/socks5/data.txt", "protocol": "socks5"}
+    ]
+  },
+  {
+    "publisher": "zebbern",
+    "homepage": "https://github.com/zebbern/Proxy-Scraper",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/zebbern/Proxy-Scraper/main/http.txt", "protocol": "http"},
+      {"url": "https://raw.githubusercontent.com/zebbern/Proxy-Scraper/main/https.txt", "protocol": "https"},
+      {"url": "https://raw.githubusercontent.com/zebbern/Proxy-Scraper/main/socks4.txt", "protocol": "socks4"},
+      {"url": "https://raw.githubusercontent.com/zebbern/Proxy-Scraper/main/socks5.txt", "protocol": "socks5"}
+    ]
+  },
+  {
+    "publisher": "zevtyardt",
+    "homepage": "https://github.com/zevtyardt/proxy-list",
+    "feeds": [
+      {"url": "https://raw.githubusercontent.com/zevtyardt/proxy-list/main/http.txt", "protocol": "http"}
     ]
   }
 ]

@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - .github/workflows/proxies.yml
+      - sources.json
   workflow_dispatch:
     inputs:
       limit:
