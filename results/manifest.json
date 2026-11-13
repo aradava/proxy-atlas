@@ -1,13 +1,13 @@
 {
   "generator": "prox",
   "schema_version": 2,
-  "started_at_utc": "2026-11-13T07:37:12+00:00",
+  "started_at_utc": "2026-11-13T09:06:58+00:00",
   "collection_mode": "grabber",
   "country_database": {
     "source": "https://download.db-ip.com/free/dbip-country-lite-2026-11.csv.gz",
     "credit": "IP Geolocation by DB-IP"
   },
-  "discovered_candidates": 595793,
+  "discovered_candidates": 595106,
   "sources": [
     {
       "publisher": "ProxyScrape",
@@ -15,7 +15,7 @@
       "url": "https://raw.githubusercontent.com/ProxyScrape/free-proxy-list/main/proxies/all/data.txt",
       "protocol": null,
       "format": "text",
-      "candidates": 1891,
+      "candidates": 2124,
       "error": null
     },
     {
@@ -24,7 +24,7 @@
       "url": "https://api.proxyscrape.com/v4/free-proxy-list/get?request=display_proxies&proxy_format=protocolipport&format=text",
       "protocol": null,
       "format": "text",
-      "candidates": 1837,
+      "candidates": 2000,
       "error": null
     },
     {
@@ -33,7 +33,7 @@
       "url": "https://api.proxyscrape.com/v2/?request=getproxies&protocol=http&timeout=10000&country=all",
       "protocol": "http",
       "format": "text",
-      "candidates": 757,
+      "candidates": 596,
       "error": null
     },
     {
@@ -42,7 +42,7 @@
       "url": "https://api.proxyscrape.com/v2/?request=getproxies&protocol=socks4&timeout=10000&country=all",
       "protocol": "socks4",
       "format": "text",
-      "candidates": 165,
+      "candidates": 157,
       "error": null
     },
     {
@@ -51,7 +51,7 @@
       "url": "https://api.proxyscrape.com/v2/?request=getproxies&protocol=socks5&timeout=10000&country=all",
       "protocol": "socks5",
       "format": "text",
-      "candidates": 610,
+      "candidates": 1069,
       "error": null
     },
     {
@@ -69,7 +69,7 @@
       "url": "https://raw.githubusercontent.com/monosans/proxy-list/main/proxies/all.txt",
       "protocol": null,
       "format": "text",
-      "candidates": 953,
+      "candidates": 900,
       "error": null
     },
     {
@@ -78,7 +78,7 @@
       "url": "https://stormsia.github.io/proxy-list/proxies.json",
       "protocol": null,
       "format": "json",
-      "candidates": 146,
+      "candidates": 476,
       "error": null
     },
     {
@@ -213,7 +213,7 @@
       "url": "https://raw.githubusercontent.com/roosterkid/openproxylist/main/HTTPS_RAW.txt",
       "protocol": "https",
       "format": "text",
-      "candidates": 130,
+      "candidates": 138,
       "error": null
     },
     {
@@ -231,7 +231,7 @@
       "url": "https://raw.githubusercontent.com/roosterkid/openproxylist/main/SOCKS5_RAW.txt",
       "protocol": "socks5",
       "format": "text",
-      "candidates": 8,
+      "candidates": 9,
       "error": null
     },
     {
@@ -420,7 +420,7 @@
       "url": "https://raw.githubusercontent.com/proxmint/free-proxy-list/main/proxies/all.txt",
       "protocol": null,
       "format": "text",
-      "candidates": 1374,
+      "candidates": 1368,
       "error": null
     },
     {
@@ -429,7 +429,7 @@
       "url": "https://proxy-scraper.de/all.txt",
       "protocol": null,
       "format": "text",
-      "candidates": 864,
+      "candidates": 1612,
       "error": null
     },
     {
@@ -438,7 +438,7 @@
       "url": "https://raw.githubusercontent.com/proxio-io/proxy-list/main/http.txt",
       "protocol": "http",
       "format": "text",
-      "candidates": 6240,
+      "candidates": 5902,
       "error": null
     },
     {
@@ -447,7 +447,7 @@
       "url": "https://raw.githubusercontent.com/proxio-io/proxy-list/main/https.txt",
       "protocol": "https",
       "format": "text",
-      "candidates": 844,
+      "candidates": 125,
       "error": null
     },
     {
@@ -456,7 +456,7 @@
       "url": "https://raw.githubusercontent.com/proxio-io/proxy-list/main/socks4.txt",
       "protocol": "socks4",
       "format": "text",
-      "candidates": 1308,
+      "candidates": 1259,
       "error": null
     },
     {
@@ -465,7 +465,7 @@
       "url": "https://raw.githubusercontent.com/proxio-io/proxy-list/main/socks5.txt",
       "protocol": "socks5",
       "format": "text",
-      "candidates": 1133,
+      "candidates": 1138,
       "error": null
     },
     {
@@ -501,7 +501,7 @@
       "url": "https://hproxy.com/api/proxy-list?format=txt&protocol=http",
       "protocol": "http",
       "format": "text",
-      "candidates": 2753,
+      "candidates": 2357,
       "error": null
     },
     {
@@ -510,7 +510,7 @@
       "url": "https://hproxy.com/api/proxy-list?format=txt&protocol=https",
       "protocol": "https",
       "format": "text",
-      "candidates": 2547,
+      "candidates": 2194,
       "error": null
     },
     {
@@ -519,7 +519,7 @@
       "url": "https://hproxy.com/api/proxy-list?format=txt&protocol=socks4",
       "protocol": "socks4",
       "format": "text",
-      "candidates": 594,
+      "candidates": 579,
       "error": null
     },
     {
@@ -528,7 +528,7 @@
       "url": "https://hproxy.com/api/proxy-list?format=txt&protocol=socks5",
       "protocol": "socks5",
       "format": "text",
-      "candidates": 567,
+      "candidates": 771,
       "error": null
     },
     {
@@ -537,7 +537,7 @@
       "url": "https://raw.githubusercontent.com/litportnet/free-proxy-list/live/proxies/http.txt",
       "protocol": "http",
       "format": "text",
-      "candidates": 1306,
+      "candidates": 1082,
       "error": null
     },
     {
@@ -546,7 +546,7 @@
       "url": "https://raw.githubusercontent.com/litportnet/free-proxy-list/live/proxies/socks4.txt",
       "protocol": "socks4",
       "format": "text",
-      "candidates": 601,
+      "candidates": 602,
       "error": null
     },
     {
@@ -555,7 +555,7 @@
       "url": "https://raw.githubusercontent.com/litportnet/free-proxy-list/live/proxies/socks5.txt",
       "protocol": "socks5",
       "format": "text",
-      "candidates": 429,
+      "candidates": 610,
       "error": null
     },
     {
@@ -564,7 +564,7 @@
       "url": "https://proxyspace.pro/http.txt",
       "protocol": "http",
       "format": "text",
-      "candidates": 3867,
+      "candidates": 4081,
       "error": null
     },
     {
@@ -573,7 +573,7 @@
       "url": "https://proxyspace.pro/https.txt",
       "protocol": "https",
       "format": "text",
-      "candidates": 3498,
+      "candidates": 3513,
       "error": null
     },
     {
@@ -582,7 +582,7 @@
       "url": "https://proxyspace.pro/socks4.txt",
       "protocol": "socks4",
       "format": "text",
-      "candidates": 4633,
+      "candidates": 4644,
       "error": null
     },
     {
@@ -591,7 +591,7 @@
       "url": "https://proxyspace.pro/socks5.txt",
       "protocol": "socks5",
       "format": "text",
-      "candidates": 8050,
+      "candidates": 8051,
       "error": null
     },
     {
@@ -600,7 +600,7 @@
       "url": "https://proxyspace.pro/country/ir/http.txt",
       "protocol": "http",
       "format": "text",
-      "candidates": 45,
+      "candidates": 44,
       "error": null
     },
     {
@@ -618,7 +618,7 @@
       "url": "https://proxywing.com/api/free-proxy-list?format=txt&proxy_format=protocolipport",
       "protocol": null,
       "format": "text",
-      "candidates": 135,
+      "candidates": 172,
       "error": null
     },
     {
@@ -627,7 +627,7 @@
       "url": "https://proxynest.live/api/export?format=txt&protocol=http",
       "protocol": "http",
       "format": "text",
-      "candidates": 3495,
+      "candidates": 3510,
       "error": null
     },
     {
@@ -636,7 +636,7 @@
       "url": "https://proxynest.live/api/export?format=txt&protocol=socks4",
       "protocol": "socks4",
       "format": "text",
-      "candidates": 19,
+      "candidates": 17,
       "error": null
     },
     {
@@ -645,7 +645,7 @@
       "url": "https://proxynest.live/api/export?format=txt&protocol=socks5",
       "protocol": "socks5",
       "format": "text",
-      "candidates": 15,
+      "candidates": 12,
       "error": null
     },
     {
@@ -654,7 +654,7 @@
       "url": "https://api.proxyscraper.com/v1/http.txt",
       "protocol": "http",
       "format": "text",
-      "candidates": 171,
+      "candidates": 152,
       "error": null
     },
     {
@@ -663,7 +663,7 @@
       "url": "https://api.proxyscraper.com/v1/socks5.txt",
       "protocol": "socks5",
       "format": "text",
-      "candidates": 39,
+      "candidates": 47,
       "error": null
     },
     {
@@ -672,7 +672,7 @@
       "url": "https://raw.githubusercontent.com/proxy-free/free-proxy-list/main/http.txt",
       "protocol": "http",
       "format": "text",
-      "candidates": 684,
+      "candidates": 697,
       "error": null
     },
     {
@@ -690,7 +690,7 @@
       "url": "https://raw.githubusercontent.com/proxy-free/free-proxy-list/main/socks4.txt",
       "protocol": "socks4",
       "format": "text",
-      "candidates": 177,
+      "candidates": 197,
       "error": null
     },
     {
@@ -699,7 +699,7 @@
       "url": "https://raw.githubusercontent.com/proxy-free/free-proxy-list/main/socks5.txt",
       "protocol": "socks5",
       "format": "text",
-      "candidates": 1854,
+      "candidates": 1629,
       "error": null
     },
     {
@@ -744,7 +744,7 @@
       "url": "https://raw.githubusercontent.com/xyzs996/free-proxy-health-list/main/proxies/protocols/http/data.txt",
       "protocol": "http",
       "format": "text",
-      "candidates": 2783,
+      "candidates": 2844,
       "error": null
     },
     {
@@ -753,7 +753,7 @@
       "url": "https://raw.githubusercontent.com/xyzs996/free-proxy-health-list/main/proxies/protocols/https/data.txt",
       "protocol": "https",
       "format": "text",
-      "candidates": 2236,
+      "candidates": 2002,
       "error": null
     },
     {
@@ -762,7 +762,7 @@
       "url": "https://raw.githubusercontent.com/xyzs996/free-proxy-health-list/main/proxies/protocols/socks4/data.txt",
       "protocol": "socks4",
       "format": "text",
-      "candidates": 882,
+      "candidates": 821,
       "error": null
     },
     {
@@ -771,7 +771,7 @@
       "url": "https://raw.githubusercontent.com/xyzs996/free-proxy-health-list/main/proxies/protocols/socks5/data.txt",
       "protocol": "socks5",
       "format": "text",
-      "candidates": 525,
+      "candidates": 449,
       "error": null
     },
     {
@@ -843,7 +843,7 @@
       "url": "https://freeproxyhub.net/api/v1/proxies?protocol=http&format=txt",
       "protocol": "http",
       "format": "text",
-      "candidates": 1433,
+      "candidates": 932,
       "error": null
     },
     {
@@ -852,7 +852,7 @@
       "url": "https://freeproxyhub.net/api/v1/proxies?protocol=https&format=txt",
       "protocol": "https",
       "format": "text",
-      "candidates": 481,
+      "candidates": 318,
       "error": null
     },
     {
@@ -861,7 +861,7 @@
       "url": "https://freeproxyhub.net/api/v1/proxies?protocol=socks4&format=txt",
       "protocol": "socks4",
       "format": "text",
-      "candidates": 472,
+      "candidates": 367,
       "error": null
     },
     {
@@ -870,7 +870,7 @@
       "url": "https://freeproxyhub.net/api/v1/proxies?protocol=socks5&format=txt",
       "protocol": "socks5",
       "format": "text",
-      "candidates": 830,
+      "candidates": 1073,
       "error": null
     },
     {
@@ -879,7 +879,7 @@
       "url": "https://raw.githubusercontent.com/iplocate/free-proxy-list/main/protocols/http.txt",
       "protocol": "http",
       "format": "text",
-      "candidates": 603,
+      "candidates": 619,
       "error": null
     },
     {
@@ -888,7 +888,7 @@
       "url": "https://raw.githubusercontent.com/iplocate/free-proxy-list/main/protocols/socks4.txt",
       "protocol": "socks4",
       "format": "text",
-      "candidates": 81,
+      "candidates": 91,
       "error": null
     },
     {
@@ -897,7 +897,7 @@
       "url": "https://raw.githubusercontent.com/iplocate/free-proxy-list/main/protocols/socks5.txt",
       "protocol": "socks5",
       "format": "text",
-      "candidates": 554,
+      "candidates": 799,
       "error": null
     },
     {
@@ -951,7 +951,7 @@
       "url": "https://raw.githubusercontent.com/zloi-user/hideip.me/main/http.txt",
       "protocol": "http",
       "format": "text-with-country",
-      "candidates": 223,
+      "candidates": 98,
       "error": null
     },
     {
@@ -960,7 +960,7 @@
       "url": "https://raw.githubusercontent.com/zloi-user/hideip.me/main/https.txt",
       "protocol": "https",
       "format": "text-with-country",
-      "candidates": 1000,
+      "candidates": 987,
       "error": null
     },
     {
@@ -969,7 +969,7 @@
       "url": "https://raw.githubusercontent.com/zloi-user/hideip.me/main/socks4.txt",
       "protocol": "socks4",
       "format": "text-with-country",
-      "candidates": 403,
+      "candidates": 84,
       "error": null
     },
     {
@@ -978,7 +978,7 @@
       "url": "https://raw.githubusercontent.com/zloi-user/hideip.me/main/socks5.txt",
       "protocol": "socks5",
       "format": "text-with-country",
-      "candidates": 381,
+      "candidates": 130,
       "error": null
     },
     {
@@ -987,7 +987,7 @@
       "url": "https://raw.githubusercontent.com/zloi-user/hideip.me/main/connect.txt",
       "protocol": "http",
       "format": "text-with-country",
-      "candidates": 1548,
+      "candidates": 2079,
       "error": null
     },
     {
@@ -1086,7 +1086,7 @@
       "url": "https://raw.githubusercontent.com/dpangestuw/Free-PROXY/main/http_proxies.txt",
       "protocol": "http",
       "format": "text",
-      "candidates": 3957,
+      "candidates": 3854,
       "error": null
     },
     {
@@ -1095,7 +1095,7 @@
       "url": "https://raw.githubusercontent.com/dpangestuw/Free-PROXY/main/socks4_proxies.txt",
       "protocol": "socks4",
       "format": "text",
-      "candidates": 2728,
+      "candidates": 2738,
       "error": null
     },
     {
@@ -1104,7 +1104,7 @@
       "url": "https://raw.githubusercontent.com/dpangestuw/Free-PROXY/main/socks5_proxies.txt",
       "protocol": "socks5",
       "format": "text",
-      "candidates": 2870,
+      "candidates": 3314,
       "error": null
     },
     {
@@ -1140,7 +1140,7 @@
       "url": "https://raw.githubusercontent.com/Tianndev/free-proxy/main/proxy/http.txt",
       "protocol": "http",
       "format": "text",
-      "candidates": 10290,
+      "candidates": 10301,
       "error": null
     },
     {
@@ -1149,7 +1149,7 @@
       "url": "https://raw.githubusercontent.com/Tianndev/free-proxy/main/proxy/https.txt",
       "protocol": "https",
       "format": "text",
-      "candidates": 6795,
+      "candidates": 6632,
       "error": null
     },
     {
@@ -1158,7 +1158,7 @@
       "url": "https://raw.githubusercontent.com/Tianndev/free-proxy/main/proxy/socks4.txt",
       "protocol": "socks4",
       "format": "text",
-      "candidates": 3498,
+      "candidates": 3533,
       "error": null
     },
     {
@@ -1167,7 +1167,7 @@
       "url": "https://raw.githubusercontent.com/Tianndev/free-proxy/main/proxy/socks5.txt",
       "protocol": "socks5",
       "format": "text",
-      "candidates": 3166,
+      "candidates": 3389,
       "error": null
     },
     {
@@ -1176,7 +1176,7 @@
       "url": "https://openproxylist.xyz/http.txt",
       "protocol": "http",
       "format": "text",
-      "candidates": 6001,
+      "candidates": 6210,
       "error": null
     },
     {
@@ -1185,7 +1185,7 @@
       "url": "https://openproxylist.xyz/https.txt",
       "protocol": "https",
       "format": "text",
-      "candidates": 6563,
+      "candidates": 6982,
       "error": null
     },
     {
@@ -1194,7 +1194,7 @@
       "url": "https://openproxylist.xyz/socks4.txt",
       "protocol": "socks4",
       "format": "text",
-      "candidates": 4666,
+      "candidates": 4683,
       "error": null
     },
     {
@@ -1203,7 +1203,7 @@
       "url": "https://openproxylist.xyz/socks5.txt",
       "protocol": "socks5",
       "format": "text",
-      "candidates": 8529,
+      "candidates": 8917,
       "error": null
     },
     {
@@ -1239,7 +1239,7 @@
       "url": "https://raw.githubusercontent.com/watchttvv/free-proxy-list/main/proxy.txt",
       "protocol": null,
       "format": "text",
-      "candidates": 23,
+      "candidates": 18,
       "error": null
     },
     {
@@ -1257,7 +1257,7 @@
       "url": "https://raw.githubusercontent.com/VPSLabCloud/VPSLab-Free-Proxy-List/main/http_all.txt",
       "protocol": "http",
       "format": "text",
-      "candidates": 667,
+      "candidates": 554,
       "error": null
     },
     {
@@ -1266,7 +1266,7 @@
       "url": "https://raw.githubusercontent.com/VPSLabCloud/VPSLab-Free-Proxy-List/main/socks4_all.txt",
       "protocol": "socks4",
       "format": "text",
-      "candidates": 148,
+      "candidates": 176,
       "error": null
     },
     {
@@ -1275,7 +1275,7 @@
       "url": "https://raw.githubusercontent.com/VPSLabCloud/VPSLab-Free-Proxy-List/main/socks5_all.txt",
       "protocol": "socks5",
       "format": "text",
-      "candidates": 545,
+      "candidates": 1089,
       "error": null
     },
     {
@@ -1284,7 +1284,7 @@
       "url": "https://raw.githubusercontent.com/MrMarble/proxy-list/main/http.txt",
       "protocol": "http",
       "format": "text",
-      "candidates": 465,
+      "candidates": 478,
       "error": null
     },
     {
@@ -1293,7 +1293,7 @@
       "url": "https://raw.githubusercontent.com/MrMarble/proxy-list/main/https.txt",
       "protocol": "https",
       "format": "text",
-      "candidates": 1482,
+      "candidates": 1467,
       "error": null
     },
     {
@@ -1302,7 +1302,7 @@
       "url": "https://raw.githubusercontent.com/MrMarble/proxy-list/main/socks5.txt",
       "protocol": "socks5",
       "format": "text",
-      "candidates": 141,
+      "candidates": 175,
       "error": null
     },
     {
@@ -1311,7 +1311,7 @@
       "url": "https://raw.githubusercontent.com/vmheaven/VMHeaven.io-Free-Proxy-List/main/http.txt",
       "protocol": "http",
       "format": "text",
-      "candidates": 3606,
+      "candidates": 3326,
       "error": null
     },
     {
@@ -1320,7 +1320,7 @@
       "url": "https://raw.githubusercontent.com/vmheaven/VMHeaven.io-Free-Proxy-List/main/https.txt",
       "protocol": "https",
       "format": "text",
-      "candidates": 4641,
+      "candidates": 3625,
       "error": null
     },
     {
@@ -1329,7 +1329,7 @@
       "url": "https://raw.githubusercontent.com/vmheaven/VMHeaven.io-Free-Proxy-List/main/socks4.txt",
       "protocol": "socks4",
       "format": "text",
-      "candidates": 1659,
+      "candidates": 1520,
       "error": null
     },
     {
@@ -1338,7 +1338,7 @@
       "url": "https://raw.githubusercontent.com/vmheaven/VMHeaven.io-Free-Proxy-List/main/socks5.txt",
       "protocol": "socks5",
       "format": "text",
-      "candidates": 1134,
+      "candidates": 1054,
       "error": null
     },
     {
@@ -1401,7 +1401,7 @@
       "url": "https://raw.githubusercontent.com/Bes-js/public-proxy-list/main/proxies.txt",
       "protocol": null,
       "format": "text",
-      "candidates": 2079,
+      "candidates": 2055,
       "error": null
     },
     {
@@ -1410,7 +1410,7 @@
       "url": "https://raw.githubusercontent.com/6yyn/free-proxy-list/main/http.txt",
       "protocol": "http",
       "format": "text",
-      "candidates": 772,
+      "candidates": 631,
       "error": null
     },
     {
@@ -1419,7 +1419,7 @@
       "url": "https://raw.githubusercontent.com/6yyn/free-proxy-list/main/https.txt",
       "protocol": "https",
       "format": "text",
-      "candidates": 772,
+      "candidates": 631,
       "error": null
     },
     {
@@ -1482,7 +1482,7 @@
       "url": "https://raw.githubusercontent.com/proxygenerator1/ProxyGenerator/main/Stable/http.txt",
       "protocol": "http",
       "format": "text",
-      "candidates": 345,
+      "candidates": 320,
       "error": null
     },
     {
@@ -1491,7 +1491,7 @@
       "url": "https://raw.githubusercontent.com/proxygenerator1/ProxyGenerator/main/Stable/https.txt",
       "protocol": "https",
       "format": "text",
-      "candidates": 1089,
+      "candidates": 1107,
       "error": null
     },
     {
@@ -1500,7 +1500,7 @@
       "url": "https://raw.githubusercontent.com/proxygenerator1/ProxyGenerator/main/Stable/socks4.txt",
       "protocol": "socks4",
       "format": "text",
-      "candidates": 121,
+      "candidates": 114,
       "error": null
     },
     {
@@ -1509,7 +1509,7 @@
       "url": "https://raw.githubusercontent.com/proxygenerator1/ProxyGenerator/main/Stable/socks5.txt",
       "protocol": "socks5",
       "format": "text",
-      "candidates": 158,
+      "candidates": 171,
       "error": null
     },
     {
@@ -1788,7 +1788,7 @@
       "url": "https://proxycheck.app/api/v1/public-proxies/export?format=txt&limit=3000",
       "protocol": null,
       "format": "text",
-      "candidates": 474,
+      "candidates": 457,
       "error": null
     },
     {
@@ -1797,7 +1797,7 @@
       "url": "https://proxycheck.app/api/v1/public-proxies/export?format=txt&country=IR",
       "protocol": null,
       "format": "text",
-      "candidates": 5,
+      "candidates": 4,
       "error": null
     },
     {
@@ -1842,7 +1842,7 @@
       "url": "https://raw.githubusercontent.com/SoliSpirit/proxy-list/main/http.txt",
       "protocol": "http",
       "format": "text",
-      "candidates": 143643,
+      "candidates": 143757,
       "error": null
     },
     {
@@ -1851,7 +1851,7 @@
       "url": "https://raw.githubusercontent.com/SoliSpirit/proxy-list/main/https.txt",
       "protocol": "https",
       "format": "text",
-      "candidates": 4933,
+      "candidates": 4939,
       "error": null
     },
     {
@@ -1860,7 +1860,7 @@
       "url": "https://raw.githubusercontent.com/SoliSpirit/proxy-list/main/socks4.txt",
       "protocol": "socks4",
       "format": "text",
-      "candidates": 106926,
+      "candidates": 106930,
       "error": null
     },
     {
@@ -1869,7 +1869,7 @@
       "url": "https://raw.githubusercontent.com/SoliSpirit/proxy-list/main/socks5.txt",
       "protocol": "socks5",
       "format": "text",
-      "candidates": 127478,
+      "candidates": 127635,
       "error": null
     },
     {
@@ -1986,7 +1986,7 @@
       "url": "https://raw.githubusercontent.com/themiralay/Proxy-List-World/master/data.txt",
       "protocol": "http",
       "format": "text",
-      "candidates": 263,
+      "candidates": 209,
       "error": null
     },
     {
@@ -2004,161 +2004,161 @@
       "url": "https://hide.mn/en/proxy-list/",
       "protocol": null,
       "format": "table",
-      "candidates": 67,
+      "candidates": 64,
       "error": null
     }
   ],
-  "finished_at_utc": "2026-11-13T07:37:39+00:00",
-  "collected_proxies": 595793,
-  "distinct_endpoints": 234494,
+  "finished_at_utc": "2026-11-13T09:07:26+00:00",
+  "collected_proxies": 595106,
+  "distinct_endpoints": 234013,
   "countries": {
     "AD": 3,
-    "AE": 832,
-    "AF": 110,
-    "AL": 443,
-    "AM": 183,
+    "AE": 834,
+    "AF": 114,
+    "AL": 439,
+    "AM": 185,
     "AO": 33,
     "AQ": 8,
-    "AR": 3327,
-    "AT": 974,
-    "AU": 1915,
-    "AZ": 104,
+    "AR": 3302,
+    "AT": 977,
+    "AU": 1893,
+    "AZ": 103,
     "BA": 163,
     "BB": 4,
-    "BD": 6415,
-    "BE": 289,
+    "BD": 6398,
+    "BE": 290,
     "BF": 29,
-    "BG": 817,
+    "BG": 814,
     "BH": 153,
-    "BI": 29,
+    "BI": 32,
     "BJ": 18,
     "BN": 3,
     "BO": 238,
-    "BR": 11862,
+    "BR": 11844,
     "BS": 2,
     "BT": 11,
     "BW": 90,
-    "BY": 111,
+    "BY": 107,
     "BZ": 5713,
-    "CA": 82112,
-    "CD": 74,
-    "CG": 35,
-    "CH": 1118,
+    "CA": 82024,
+    "CD": 72,
+    "CG": 34,
+    "CH": 1106,
     "CI": 28,
-    "CL": 1335,
+    "CL": 1330,
     "CM": 89,
-    "CN": 17484,
-    "CO": 5396,
+    "CN": 17445,
+    "CO": 5362,
     "CR": 439,
     "CU": 6,
     "CV": 1,
     "CW": 3136,
-    "CY": 840,
-    "CZ": 1302,
-    "DE": 18287,
+    "CY": 841,
+    "CZ": 1292,
+    "DE": 18263,
     "DJ": 3,
-    "DK": 248,
-    "DO": 1859,
+    "DK": 242,
+    "DO": 1823,
     "DZ": 59,
-    "EC": 2211,
-    "EE": 1558,
-    "EG": 1421,
-    "ES": 2426,
+    "EC": 2181,
+    "EE": 1557,
+    "EG": 1412,
+    "ES": 2394,
     "ET": 4,
-    "FI": 6287,
-    "FR": 10995,
+    "FI": 6285,
+    "FR": 11008,
     "GA": 10,
-    "GB": 33506,
+    "GB": 33532,
     "GD": 1,
-    "GE": 387,
+    "GE": 386,
     "GH": 128,
     "GM": 10,
     "GN": 18,
     "GQ": 30,
-    "GR": 198,
-    "GT": 512,
+    "GR": 205,
+    "GT": 507,
     "GU": 3,
-    "HK": 7184,
-    "HN": 447,
+    "HK": 7154,
+    "HN": 440,
     "HR": 146,
     "HT": 8,
-    "HU": 464,
-    "ID": 34972,
-    "IE": 415,
-    "IL": 521,
-    "IN": 8650,
-    "IQ": 516,
-    "IR": 3818,
+    "HU": 459,
+    "ID": 34729,
+    "IE": 403,
+    "IL": 474,
+    "IN": 8585,
+    "IQ": 517,
+    "IR": 3820,
     "IS": 30,
-    "IT": 1092,
+    "IT": 1089,
     "JM": 24,
     "JO": 11,
-    "JP": 4086,
-    "KE": 919,
+    "JP": 3971,
+    "KE": 914,
     "KG": 146,
-    "KH": 1431,
-    "KR": 6336,
+    "KH": 1433,
+    "KR": 6319,
     "KW": 2,
-    "KZ": 2838,
-    "LA": 37,
-    "LB": 130,
+    "KZ": 2840,
+    "LA": 38,
+    "LB": 129,
     "LC": 1,
-    "LK": 27,
+    "LK": 28,
     "LR": 3,
     "LS": 47,
     "LT": 1098,
-    "LU": 64,
-    "LV": 337,
-    "LY": 623,
-    "MA": 514,
+    "LU": 66,
+    "LV": 338,
+    "LY": 616,
+    "MA": 504,
     "MC": 3,
-    "MD": 248,
+    "MD": 247,
     "ME": 99,
     "MF": 3,
-    "MG": 19,
+    "MG": 17,
     "MK": 45,
-    "MM": 186,
-    "MN": 178,
+    "MM": 184,
+    "MN": 179,
     "MO": 39,
     "MT": 71,
     "MU": 87,
     "MV": 45,
     "MW": 53,
-    "MX": 4158,
-    "MY": 1397,
+    "MX": 4079,
+    "MY": 1374,
     "MZ": 34,
     "NA": 22,
     "NC": 1,
     "NE": 14,
-    "NG": 422,
+    "NG": 425,
     "NI": 41,
-    "NL": 45737,
+    "NL": 46478,
     "NO": 101,
-    "NP": 411,
+    "NP": 414,
     "NZ": 83,
-    "OM": 81,
-    "PA": 121,
-    "PE": 2012,
-    "PG": 18,
-    "PH": 5623,
-    "PK": 1510,
-    "PL": 2632,
-    "PR": 186,
-    "PS": 184,
+    "OM": 78,
+    "PA": 120,
+    "PE": 1993,
+    "PG": 19,
+    "PH": 5582,
+    "PK": 1506,
+    "PL": 2630,
+    "PR": 184,
+    "PS": 185,
     "PT": 137,
-    "PY": 498,
-    "QA": 136,
-    "RO": 1137,
-    "RS": 554,
-    "RU": 18593,
+    "PY": 497,
+    "QA": 134,
+    "RO": 1138,
+    "RS": 556,
+    "RU": 18581,
     "RW": 45,
-    "SA": 174,
-    "SC": 851,
+    "SA": 173,
+    "SC": 849,
     "SD": 11,
-    "SE": 2037,
-    "SG": 10740,
-    "SI": 63,
-    "SK": 294,
+    "SE": 2025,
+    "SG": 10750,
+    "SI": 62,
+    "SK": 295,
     "SL": 11,
     "SN": 21,
     "SO": 30,
@@ -2166,35 +2166,35 @@
     "SS": 11,
     "SV": 29,
     "SX": 5,
-    "SY": 615,
+    "SY": 606,
     "SZ": 17,
     "TC": 4,
     "TD": 6,
     "TG": 10,
-    "TH": 6850,
-    "TJ": 12,
+    "TH": 6822,
+    "TJ": 11,
     "TL": 4,
     "TM": 11,
     "TN": 29,
-    "TR": 10874,
+    "TR": 10864,
     "TT": 78,
-    "TW": 754,
-    "TZ": 186,
-    "UA": 5984,
+    "TW": 753,
+    "TZ": 179,
+    "UA": 5981,
     "UG": 76,
-    "US": 144020,
-    "UY": 72,
-    "UZ": 265,
-    "VE": 2296,
+    "US": 143892,
+    "UY": 70,
+    "UZ": 264,
+    "VE": 2271,
     "VG": 69,
     "VI": 3,
-    "VN": 14044,
+    "VN": 14023,
     "VU": 3,
     "WS": 7,
-    "XK": 112,
-    "YE": 335,
-    "YT": 33,
-    "ZA": 3217,
+    "XK": 110,
+    "YE": 334,
+    "YT": 32,
+    "ZA": 3140,
     "ZM": 34,
     "ZW": 153
   }
