@@ -37,7 +37,7 @@ export default {
       return new Response(null, { status: 204, headers: responseHeaders });
     }
     if (url.pathname === "/run" && request.method === "POST") {
-      return runManualTest(request, env, url.origin);
+      return runManualCollection(request, env, url.origin);
     }
     return new Response("Not found", { status: 404, headers: responseHeaders });
   },
@@ -67,7 +67,7 @@ export default {
   },
 };
 
-async function runManualTest(request, env, origin) {
+async function runManualCollection(request, env, origin) {
   if (request.headers.get("Origin") !== origin) {
     return json({ message: "درخواست باید از همین صفحه ارسال شود." }, 403);
   }
@@ -82,7 +82,7 @@ async function runManualTest(request, env, origin) {
   const password = input?.password;
   if ((input?.workflow !== undefined && input.workflow !== "full") ||
       typeof password !== "string" || password.length > 256) {
-    return json({ message: "درخواست تست معتبر نیست." }, 400);
+    return json({ message: "درخواست گردآوری معتبر نیست." }, 400);
   }
 
   const encoder = new TextEncoder();
@@ -91,7 +91,7 @@ async function runManualTest(request, env, origin) {
     crypto.subtle.digest("SHA-256", encoder.encode(env.MANUAL_TEST_PASSWORD)),
   ]);
   if (!crypto.subtle.timingSafeEqual(submitted, expected)) {
-    return json({ message: "رمز تست دستی اشتباه است." }, 401);
+    return json({ message: "رمز اجرای دستی اشتباه است." }, 401);
   }
   if (!env.GITHUB_ACTIONS_TOKEN) {
     return json({ message: "Secret با نام GITHUB_ACTIONS_TOKEN تنظیم نشده است." }, 503);
@@ -114,7 +114,7 @@ async function runManualTest(request, env, origin) {
     }));
 
     return json({
-      message: "گیت‌هاب درخواست تست را پذیرفت. وضعیت صف و نتیجه را در GitHub Actions ببین.",
+      message: "گیت‌هاب درخواست گردآوری را پذیرفت. وضعیت صف و نتیجه را در GitHub Actions ببین.",
       runUrl: result.runUrl ?? workflowUrl,
       runId: result.runId,
     }, 202);
@@ -172,7 +172,7 @@ function dashboard(nonce, manualEnabled) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark">
-  <title>تست دستی پروکسی‌ها | ProxyAtlas</title>
+  <title>گردآوری دستی پروکسی‌ها | ProxyAtlas</title>
   <style nonce="${nonce}">
     :root {
       font-family: Tahoma, "Segoe UI", sans-serif;
@@ -271,15 +271,15 @@ function dashboard(nonce, manualEnabled) {
     </header>
     <main class="panel">
       <div class="intro">
-        <h1>تست دستی پروکسی‌ها</h1>
-        <p>تست کامل خودکار هر ۹۰ دقیقه در صف GitHub ثبت می‌شود. از این صفحه می‌توانی همان تست را دستی شروع کنی.</p>
+        <h1>گردآوری دستی پروکسی‌ها</h1>
+        <p>گردآوری خودکار هر ۹۰ دقیقه در صف GitHub ثبت می‌شود. از این صفحه می‌توانی همان گردآوری را دستی شروع کنی.</p>
       </div>
-      <form id="test-form" method="post" action="/run" autocomplete="off">
+      <form id="collection-form" method="post" action="/run" autocomplete="off">
         <fieldset id="controls"${manualEnabled ? "" : " disabled"}>
-          <label for="password">رمز تست دستی</label>
+          <label for="password">رمز اجرای دستی</label>
           <input id="password" type="password" maxlength="256" dir="ltr" required>
           <div class="actions">
-            <button class="primary" type="submit">اجرای تست کامل</button>
+            <button class="primary" type="submit">گردآوری فهرست</button>
           </div>
         </fieldset>
         ${manualEnabled ? "" : '<p class="notice">برای فعال‌کردن دکمه، Secret با نام <code>MANUAL_TEST_PASSWORD</code> را در Cloudflare اضافه کن.</p>'}
@@ -289,10 +289,10 @@ function dashboard(nonce, manualEnabled) {
         </div>
       </form>
     </main>
-    <footer>نتیجهٔ تست دستی در فهرست عمومی پروکسی‌ها در GitHub منتشر می‌شود.</footer>
+    <footer>فهرست گردآوری‌شده در فهرست عمومی پروکسی‌ها در GitHub منتشر می‌شود.</footer>
   </div>
   <script nonce="${nonce}">
-    const form = document.querySelector("#test-form");
+    const form = document.querySelector("#collection-form");
     const controls = document.querySelector("#controls");
     const password = document.querySelector("#password");
     const result = document.querySelector("#result");

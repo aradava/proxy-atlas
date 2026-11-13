@@ -3,19 +3,17 @@ import csv
 import gzip
 import io
 import json
+import os
 import re
-import secrets
 import shutil
 import subprocess
 import sys
-from base64 import urlsafe_b64encode
 from bisect import bisect_right
-from collections import Counter, defaultdict
+from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import asdict, dataclass, replace
+from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta, timezone
 from ipaddress import IPv6Address, ip_address
-from itertools import islice
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from urllib.parse import urlsplit
@@ -24,15 +22,8 @@ from proxy_sources import table_entries
 
 
 PROTOCOLS = ("http", "https", "socks4", "socks4a", "socks5", "socks5h")
-WEB_PROXIES = ("http", "https")
 TABLE_FORMATS = ("table", "proxynova", "proxyverity")
 PROTOCOL_LABEL = re.compile(r"\b(?:https?|socks4a?|socks5h?)\b", re.IGNORECASE | re.ASCII)
-CLOUDFLARE_TRACE = "https://www.cloudflare.com/cdn-cgi/trace"
-HTTP_ECHO_URL = "http://httpbingo.org/base64/"
-PROBE_URLS = {
-    "https": ("https://api64.ipify.org/", "https://checkip.amazonaws.com/", CLOUDFLARE_TRACE),
-    "http": ("http://api.ipify.org/", HTTP_ECHO_URL),
-}
 COUNTRY_CODE = re.compile(r"[A-Z]{2}")
 ENDPOINT = re.compile(
     r"(?:(http|https|socks4a?|socks5h?)://)?(\[[0-9a-f:]+\]|[0-9.]+):([0-9]{1,5})",
@@ -40,10 +31,7 @@ ENDPOINT = re.compile(
 )
 MAX_FEED_BYTES = 8 * 1024 * 1024
 MAX_GEO_BYTES = 16 * 1024 * 1024
-MAX_PROBE_BYTES = 1024
-DEFAULT_WORKERS = 256
-DEFAULT_TIMEOUT = 6
-SCHEMA = {"generator": "prox", "schema_version": 1}
+SCHEMA = {"generator": "prox", "schema_version": 2}
 
 
 @dataclass(frozen=True)
@@ -65,52 +53,6 @@ class Feed:
     url: str
     protocol: str | None = None
     format: str = "text"
-
-
-@dataclass(frozen=True)
-class Check:
-    proxy: Proxy
-    mode: str
-    exit_ip: str | None
-    country: str
-    latency_ms: int
-    verification: str = "exit_ip"
-    used_alternate: bool = False
-
-
-@dataclass(frozen=True)
-class Probe:
-    proxy: Proxy
-    mode: str
-    target: str
-    url: str
-    challenge: str | None
-
-
-@dataclass(frozen=True)
-class ProbeResponse:
-    curl_code: int
-    status: int
-    connect_status: int
-    latency_ms: int
-    tls_established: bool
-    tcp_connected: bool
-    remote_ip: str
-    remote_port: int
-    body: bytes
-
-
-class CurlRequestError(ValueError):
-    def __init__(self, returncode, status):
-        super().__init__(f"curl {returncode}, HTTP {status}")
-        if returncode == 28:
-            self.reason = "timeout"
-        elif status not in ("?", "000", "200"):
-            self.reason = "http_status"
-        elif returncode and returncode != 63:
-            self.reason = "connection"
-        else:
-            self.reason = "invalid_response"
 
 
 def public_ip(value):
@@ -141,16 +83,7 @@ def parse_proxy(value, protocol=None):
 
 def parse_endpoint(value, protocol):
     proxy = parse_proxy(value.strip().removesuffix("/"), protocol)
-    if proxy is None:
-        return ()
-    schemes = {
-        "https": ("https", "http"),
-        "socks4": ("socks4", "socks4a"),
-        "socks4a": ("socks4a", "socks4"),
-        "socks5": ("socks5", "socks5h"),
-        "socks5h": ("socks5h", "socks5"),
-    }.get(proxy.scheme, (proxy.scheme,))
-    return tuple(Proxy(scheme, proxy.host, proxy.port) for scheme in schemes)
+    return () if proxy is None else (proxy,)
 
 
 def parse_host_port(host, port, protocol):
@@ -238,37 +171,28 @@ def load_feeds(path):
     return feeds
 
 
-def curl_request(url, timeout, max_bytes, proxy=None, download=False):
+def download(url, timeout, max_bytes):
     command = [
         "curl", "--disable", "--silent", "--show-error", "--fail", "--globoff",
         "--max-time", str(timeout), "--connect-timeout", str(min(timeout, 8)),
-        "--max-filesize", str(max_bytes), "--write-out", "\n%{http_code} %{time_total}",
+        "--max-filesize", str(max_bytes), "--write-out", "\n%{http_code}",
+        "--proto", "=https", "--proto-redir", "=https", "--location",
+        "--max-redirs", "3", "--user-agent", "ProxyAtlas/1.0 (+https://github.com/aradava/proxy-atlas)",
+        "--proxy", "", "--url", url,
     ]
-    if download:
-        command += [
-            "--proto", "=https", "--proto-redir", "=https", "--location",
-            "--max-redirs", "3", "--user-agent", "ProxyAtlas/1.0 (+https://github.com/aradava/proxy-atlas)",
-        ]
-    if proxy is None:
-        command += ["--proxy", ""]
-    else:
-        command += ["--proxy", proxy.url, "--noproxy", ""]
     response = subprocess.run(
-        [*command, "--url", url], capture_output=True,
-        timeout=timeout + 3,
-        check=False,
+        command, capture_output=True, timeout=timeout + 3, check=False,
     )
     body, _, status = response.stdout.rpartition(b"\n")
-    fields = status.split()
-    if response.returncode or len(fields) != 2 or fields[0] != b"200" or len(body) > max_bytes:
-        status_code = fields[0].decode("ascii", errors="replace") if fields else "?"
-        raise CurlRequestError(response.returncode, status_code)
-    return body, round(float(fields[1]) * 1000)
+    if response.returncode or status != b"200" or len(body) > max_bytes:
+        status_code = status.decode("ascii", errors="replace") or "?"
+        raise ValueError(f"curl {response.returncode}, HTTP {status_code}")
+    return body
 
 
 def fetch_feed(feed):
     try:
-        payload, _ = curl_request(feed.url, 20, MAX_FEED_BYTES, download=True)
+        payload = download(feed.url, 20, MAX_FEED_BYTES)
         proxies = list(dict.fromkeys(feed_entries(payload, feed)))
         if not proxies:
             raise ValueError("No public proxy endpoints parsed")
@@ -277,22 +201,7 @@ def fetch_feed(feed):
         return feed, [], str(error) if not isinstance(error, subprocess.TimeoutExpired) else "download timed out"
 
 
-def read_previous_candidates(path):
-    previous = {}
-    if path is None:
-        return previous
-    try:
-        with path.open(encoding="utf-8-sig") as file:
-            for line in file:
-                proxy = parse_proxy(line.strip())
-                if proxy is not None:
-                    previous[proxy] = None
-    except FileNotFoundError:
-        pass
-    return previous
-
-
-def collect(feeds, previous_file=None):
+def collect(feeds):
     by_publisher = defaultdict(dict)
     source_stats = []
     batches = defaultdict(list)
@@ -312,17 +221,10 @@ def collect(feeds, previous_file=None):
         status = f"خطا: {error}" if error else f"{len(proxies):,} نامزد"
         print(f"{feed.publisher}: {status} ({feed.url})", flush=True)
     candidates = set().union(*by_publisher.values())
-    previous = read_previous_candidates(previous_file)
-    previous_only = {proxy: None for proxy in previous if proxy not in candidates}
-    if previous_only:
-        by_publisher[None] = previous_only
-        candidates.update(previous_only)
     if not candidates:
-        raise ValueError("هیچ پروکسی عمومی معتبری از فیدها یا خروجی قبلی پیدا نشد")
+        raise ValueError("هیچ آدرس پروکسی عمومی از فیدها پیدا نشد")
     return by_publisher, candidates, {
         "discovered_candidates": len(candidates),
-        "previous_candidates": len(previous),
-        "previous_only_candidates": len(previous_only),
         "sources": source_stats,
     }
 
@@ -374,356 +276,74 @@ class CountryDatabase:
         return countries[index] if index >= 0 and int(ip) <= ends[index] else "ZZ"
 
 
-def load_country_database(started, path, *, save_to=None):
+def load_country_database(started, path):
     if path is not None:
         with path.open("rb") as file:
             data = file.read(MAX_GEO_BYTES + 1)
         if len(data) > MAX_GEO_BYTES:
             raise ValueError("Local country database exceeds the size limit")
-        database = CountryDatabase(data)
-        if save_to is not None:
-            save_to.write_bytes(data)
-        return database, path.name
+        return CountryDatabase(data), path.name
 
     previous = started.replace(day=1) - timedelta(days=1)
     for month in (started, previous):
         filename = f"dbip-country-lite-{month:%Y-%m}.csv.gz"
         url = f"https://download.db-ip.com/free/{filename}"
         try:
-            data, _ = curl_request(url, 30, MAX_GEO_BYTES, download=True)
+            data = download(url, 30, MAX_GEO_BYTES)
             database = CountryDatabase(data)
         except (ValueError, OSError, EOFError, subprocess.TimeoutExpired) as error:
             print(f"Country data unavailable ({filename}): {error}", file=sys.stderr)
             continue
-        if save_to is not None:
-            save_to.write_bytes(data)
         return database, url
     raise ValueError("No usable DB-IP country database was available")
-
-
-def probe_url(url):
-    if url == HTTP_ECHO_URL:
-        challenge = secrets.token_hex(12)
-        encoded = urlsafe_b64encode(challenge.encode("ascii")).decode("ascii")
-        return url + encoded, challenge
-    if not url.startswith("http://"):
-        return url, None
-    # A unique callback makes an old cached IP or static IP response invalid.
-    callback = f"prox_{secrets.token_hex(12)}"
-    return f"{url}?format=jsonp&callback={callback}", callback
-
-
-def probe_exit_ip(body, target, challenge):
-    if len(body) > MAX_PROBE_BYTES:
-        raise ValueError("Probe response was too large")
-    if target == HTTP_ECHO_URL:
-        if body.strip() != challenge.encode("ascii"):
-            raise ValueError("HTTP probe did not echo its challenge")
-        return None
-    if target == CLOUDFLARE_TRACE:
-        addresses = [line[3:] for line in body.decode("ascii").splitlines() if line.startswith("ip=")]
-        if len(addresses) != 1:
-            raise ValueError("Cloudflare trace did not return a single IP")
-        return public_ip(addresses[0])
-    if challenge is None:
-        return public_ip(body.decode("ascii").strip())
-    prefix = f"{challenge}(".encode("ascii")
-    body = body.strip()
-    if not body.startswith(prefix) or not body.endswith(b");"):
-        raise ValueError("HTTP probe did not echo its callback")
-    result = json.loads(body[len(prefix):-2].decode("ascii"))
-    if not isinstance(result, dict) or not isinstance(result.get("ip"), str):
-        raise ValueError("HTTP probe did not return an IP")
-    return public_ip(result["ip"])
-
-
-def probe_ip(url, timeout):
-    request_url, challenge = probe_url(url)
-    body, latency = curl_request(request_url, timeout, MAX_PROBE_BYTES)
-    return probe_exit_ip(body, url, challenge), latency
-
-
-def choose_target(urls, timeout):
-    last_error = None
-    for url in urls * 2:
-        try:
-            ip, _ = probe_ip(url, max(10, timeout))
-            return url, ip
-        except (ValueError, subprocess.TimeoutExpired) as error:
-            last_error = error
-    raise ValueError(f"آزمون مستقیم مقصد {urls[0]} ناموفق بود ({last_error})") from last_error
-
-
-def check_targets(timeout):
-    https_urls = PROBE_URLS["https"]
-    primary, direct_ip = choose_target(https_urls, timeout)
-    targets = {"https": (primary,), "http": PROBE_URLS["http"][:1]}
-    direct_ips = {direct_ip}
-    for scheme, urls in PROBE_URLS.items():
-        for url in urls:
-            if url == primary:
-                continue
-            try:
-                ip, _ = probe_ip(url, max(10, timeout))
-            except (ValueError, subprocess.TimeoutExpired):
-                continue
-            if ip is not None:
-                direct_ips.add(ip)
-            if url not in targets[scheme]:
-                targets[scheme] += (url,)
-    return targets, frozenset(direct_ips)
-
-
-def new_probe(proxy, mode, target):
-    url, challenge = probe_url(target)
-    return Probe(proxy, mode, target, url, challenge)
-
-
-def parallel_responses(probes, workers, timeout):
-    if not probes:
-        return
-    command = ["curl", "--disable", "--show-error"]
-    if len(probes) > 1:
-        command += ["--parallel", "--parallel-immediate", "--parallel-max", str(workers)]
-    command += ["--config", "-"]
-    options = (
-        "silent\nfail\ngloboff\nremove-on-error\n"
-        f"max-time = {timeout}\nconnect-timeout = {min(timeout, 8)}\n"
-        f'max-filesize = {MAX_PROBE_BYTES}\nnoproxy = ""\n'
-    )
-    operations = []
-    for index, probe in enumerate(probes):
-        metadata = (
-            f"{index} %{{exitcode}} %{{http_code}} %{{http_connect}} "
-            "%{time_total} %{time_appconnect} %{time_connect} %{remote_port}|%{remote_ip}\n"
-        )
-        operations.append(
-            options + f"proxy = {json.dumps(probe.proxy.url)}\n"
-            f"url = {json.dumps(probe.url)}\noutput = {index}.body\n"
-            f"write-out = {json.dumps(metadata)}\n"
-        )
-
-    with TemporaryDirectory(prefix="prox-probes-") as directory:
-        process = subprocess.run(
-            command, input="next\n".join(operations).encode("ascii"),
-            capture_output=True, cwd=directory, check=False,
-        )
-        # A failed transfer can make curl exit nonzero even when the whole batch ran.
-        # Match every result to its request because transfers finish out of order.
-        reports = {}
-        for line in process.stdout.splitlines():
-            if not line.strip():
-                continue
-            fields, _, remote_ip = line.partition(b"|")
-            index, code, status, connect, seconds, tls_seconds, tcp_seconds, remote_port = fields.split()
-            index = int(index)
-            if index in reports or not 0 <= index < len(probes):
-                raise ValueError("Unexpected curl transfer index")
-            reports[index] = ProbeResponse(
-                int(code), int(status), int(connect), round(float(seconds) * 1000),
-                float(tls_seconds) > 0, float(tcp_seconds) > 0,
-                remote_ip.decode("ascii"), int(remote_port), b"",
-            )
-        pending = []
-        for index, probe in enumerate(probes):
-            report = reports.get(index)
-            if report is None or report.curl_code in (23, 27, 42) or (report.curl_code == 43 and len(probes) > 1):
-                pending.append(probe)
-                continue
-            if report.curl_code == 0 and 200 <= report.status < 300:
-                path = Path(directory) / f"{index}.body"
-                try:
-                    with path.open("rb") as file:
-                        report = replace(report, body=file.read(MAX_PROBE_BYTES + 1))
-                except FileNotFoundError:
-                    # A successful response with no body can leave no file.
-                    pass
-            yield probe, report
-
-    if not pending:
-        return
-    if len(probes) == 1:
-        details = process.stderr.decode("utf-8", errors="replace").strip().splitlines()
-        detail = details[-1][:300] if details else "missing transfer metadata"
-        raise ValueError(f"curl could not complete an individual probe (exit {process.returncode}): {detail}")
-
-    # curl can abort a parallel session without reporting all transfers.
-    # Keep completed results and retry just the unfinished work at lower concurrency.
-    print(
-        f"curl exit {process.returncode}: retrying {len(pending):,}/{len(probes):,} incomplete probes",
-        flush=True,
-    )
-    retry_workers = max(1, workers // 2)
-    retry_size = min(retry_workers * 4, len(probes) // 2)
-    for start in range(0, len(pending), retry_size):
-        yield from parallel_responses(pending[start:start + retry_size], retry_workers, timeout)
-
-
-def connected_to_proxy(proxy, response):
-    if response.remote_port != proxy.port or not response.remote_ip:
-        return False
-    if response.remote_ip == proxy.host:
-        return True
-    try:
-        return str(public_ip(response.remote_ip)) == proxy.host
-    except ValueError:
-        return False
-
-
-def check_response(probe, response, database, direct_ips):
-    if response.status == 407 or response.connect_status >= 400:
-        return None, "http_status"
-
-    if response.curl_code == 0 and 200 <= response.status < 300:
-        if not connected_to_proxy(probe.proxy, response):
-            return None, "wrong_peer"
-        try:
-            ip = probe_exit_ip(response.body, probe.target, probe.challenge)
-        except ValueError:
-            pass
-        else:
-            if ip is None:
-                country = database.country(ip_address(probe.proxy.host))
-                return Check(probe.proxy, probe.mode, None, country, response.latency_ms, "http_echo"), None
-            if ip in direct_ips:
-                return None, "runner_ip"
-            return Check(probe.proxy, probe.mode, str(ip), database.country(ip), response.latency_ms), None
-
-    if (
-        probe.target.startswith("https://")
-        and response.tls_established
-        and 200 <= response.status < 600
-    ):
-        if not connected_to_proxy(probe.proxy, response):
-            return None, "wrong_peer"
-        country = database.country(ip_address(probe.proxy.host))
-        return Check(probe.proxy, probe.mode, None, country, response.latency_ms, "https_response"), None
-
-    if response.curl_code == 28:
-        return None, "timeout"
-    if response.status and not 200 <= response.status < 300:
-        return None, "http_status"
-    if response.curl_code not in (0, 63):
-        return None, "connection"
-    return None, "invalid_response"
-
-
-def alternate_target(probe, response, targets, attempt):
-    if attempt == 2 or 407 in (response.status, response.connect_status):
-        return None
-    reached_proxy = (
-        response.status or response.connect_status or response.tls_established
-        or (response.tcp_connected and response.curl_code in (28, 35, 52, 56, 97))
-    )
-    if not reached_proxy:
-        return None
-    http_echo = HTTP_ECHO_URL if HTTP_ECHO_URL in targets["http"] else None
-    if probe.mode == "forward":
-        return http_echo if attempt == 0 else None
-    if not probe.target.startswith("https://"):
-        return None
-    https_targets = targets["https"]
-    next_index = https_targets.index(probe.target) + 1
-    if probe.mode == "tunnel" and not response.tls_established and (attempt or next_index == len(https_targets)):
-        if http_echo is not None:
-            return http_echo
-    if next_index < len(https_targets):
-        return https_targets[next_index]
-    return None
-
-
-def check_all(proxies, workers, timeout, database, targets, direct_ips, *, retry_timeout=False):
-    checks = []
-    failures = Counter()
-    remaining = iter(proxies)
-    completed = 0
-    https_targets = targets["https"]
-    while batch := list(islice(remaining, workers * 4)):
-        probes = []
-        for proxy in batch:
-            if proxy.scheme in WEB_PROXIES:
-                probes.append(new_probe(proxy, "connect", https_targets[0]))
-                probes.append(new_probe(proxy, "forward", targets["http"][0]))
-            else:
-                probes.append(new_probe(proxy, "tunnel", https_targets[0]))
-
-        for attempt in range(3):
-            if not probes:
-                break
-            retries = []
-            deadline = max(timeout, 8) if attempt else timeout
-            for probe, response in parallel_responses(probes, workers, deadline):
-                result, reason = check_response(probe, response, database, direct_ips)
-                if result is not None:
-                    checks.append(replace(result, used_alternate=bool(attempt)))
-                    continue
-                alternate = alternate_target(probe, response, targets, attempt)
-                if alternate is not None or (attempt == 0 and retry_timeout and reason == "timeout"):
-                    retries.append(new_probe(probe.proxy, probe.mode, alternate or probe.target))
-                    continue
-                failures[reason] += 1
-            probes = retries
-        completed += len(batch)
-        print(f"تست‌شده {completed:,}/{len(proxies):,}، آزمون موفق {len(checks):,}", flush=True)
-    return checks, failures
 
 
 def json_file(path, data):
     path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
 
 
-def write_snapshot(root, checks, manifest):
-    lists = defaultdict(dict)
-    lists["all.txt"] = {}
+def write_snapshot(root, proxies, database, manifest):
+    lists = defaultdict(list)
     for protocol in PROTOCOLS:
-        lists[f"protocols/{protocol}.txt"] = {}
-    rows = []
-    with_exit_ip = set()
-    without_exit_ip = set()
-    https_responses = set()
-    primary_successes = set()
-    for check in sorted(checks, key=lambda item: (item.latency_ms, item.proxy.url, item.mode)):
-        url, protocol, country = check.proxy.url, check.proxy.scheme, check.country
-        if check.exit_ip is None:
-            without_exit_ip.add(url)
-        else:
-            with_exit_ip.add(url)
-        if check.verification == "https_response":
-            https_responses.add(url)
-        if not check.used_alternate:
-            primary_successes.add(url)
-        rows.append({
-            "proxy": url, "protocol": protocol, "mode": check.mode,
-            "exit_ip": check.exit_ip, "country": country,
-            "country_source": "proxy_ip" if check.exit_ip is None else "exit_ip",
-            "latency_ms": check.latency_ms,
-            "verification": check.verification, "used_alternate": check.used_alternate,
-        })
-        for path in (
-            "all.txt", f"protocols/{protocol}.txt", f"modes/{protocol}-{check.mode}.txt",
-            f"countries/{country}/all.txt", f"countries/{country}/{protocol}.txt",
-        ):
-            lists[path][url] = None
+        lists[f"protocols/{protocol}.txt"] = []
+    endpoints = set()
+    countries = {}
+    with (root / "proxies.json").open("w", encoding="utf-8", newline="\n") as file:
+        file.write("[\n")
+        for index, proxy in enumerate(proxies):
+            if proxy.host not in countries:
+                countries[proxy.host] = database.country(ip_address(proxy.host))
+            country = countries[proxy.host]
+            url, protocol = proxy.url, proxy.scheme
+            endpoints.add((proxy.host, proxy.port))
+            if index:
+                file.write(",\n")
+            row = {"proxy": url, "protocol": protocol, "country": country}
+            file.write(json.dumps(row, separators=(",", ":")))
+            for path in (
+                "all.txt", f"protocols/{protocol}.txt",
+                f"countries/{country}/all.txt", f"countries/{country}/{protocol}.txt",
+            ):
+                lists[path].append(url)
+        file.write("\n]\n")
 
     for path, urls in lists.items():
         file = root / path
         file.parent.mkdir(parents=True, exist_ok=True)
-        file.write_text("".join(f"{url}\n" for url in urls), encoding="utf-8", newline="\n")
-    countries = sorted({check.country for check in checks})
-    json_file(root / "proxies.json", rows)
+        with file.open("w", encoding="utf-8", newline="\n") as output:
+            output.writelines(f"{url}\n" for url in urls)
     json_file(root / "manifest.json", {
         **SCHEMA, **manifest,
-        "working_proxies": len(lists["all.txt"]),
-        "working_endpoints": len({(check.proxy.host, check.proxy.port) for check in checks}),
-        "https_response_only_proxies": len(https_responses - with_exit_ip),
-        "proxies_without_exit_ip": len(without_exit_ip - with_exit_ip),
-        "recovered_proxies": len(lists["all.txt"]) - len(primary_successes),
-        "successful_probes": len(checks),
-        "countries": {code: len(lists[f"countries/{code}/all.txt"]) for code in countries},
+        "finished_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "collected_proxies": len(proxies),
+        "distinct_endpoints": len(endpoints),
+        "countries": {
+            code: len(lists[f"countries/{code}/all.txt"]) for code in sorted(set(countries.values()))
+        },
     })
 
 
-def publish_snapshot(output, checks, manifest):
+def publish_snapshot(output, proxies, database, manifest):
     output = output.absolute()
     output.parent.mkdir(parents=True, exist_ok=True)
     lock = output.with_name(f".{output.name}.prox-lock")
@@ -734,12 +354,13 @@ def publish_snapshot(output, checks, manifest):
         if output.exists():
             marker = output / "manifest.json"
             old = json.loads(marker.read_text(encoding="utf-8")) if marker.is_file() else {}
-            if any(old.get(key) != value for key, value in SCHEMA.items()):
+            if old.get("generator") != SCHEMA["generator"] or old.get("schema_version") not in (1, SCHEMA["schema_version"]):
                 raise ValueError(f"Choose a new directory or a previous Prox output: {output}")
         with TemporaryDirectory(dir=output.parent, prefix=".prox-") as temporary:
             root = Path(temporary)
             snapshot, previous = root / "snapshot", root / "previous"
-            write_snapshot(snapshot, checks, manifest)
+            snapshot.mkdir()
+            write_snapshot(snapshot, proxies, database, manifest)
             if output.exists():
                 output.rename(previous)
             try:
@@ -754,47 +375,37 @@ def publish_snapshot(output, checks, manifest):
 
 def require_curl():
     if not shutil.which("curl"):
-        raise ValueError("curl با قابلیت HTTPS-proxy را نصب و به PATH اضافه کنید")
-    version = subprocess.check_output(["curl", "--disable", "--version"], text=True)
-    if "HTTPS-proxy" not in version or tuple(map(int, version.split()[1].split(".")[:2])) < (8, 4):
-        raise ValueError("curl نسخهٔ ۸٫۴ یا جدیدتر با قابلیت HTTPS-proxy لازم است")
+        raise ValueError("curl برای دریافت فیدها لازم است")
 
 
 def main():
-    parser = argparse.ArgumentParser(description="گردآوری و تست پروکسی‌های عمومی HTTP و SOCKS")
+    parser = argparse.ArgumentParser(description="گردآوری و دسته‌بندی پروکسی‌های عمومی HTTP و SOCKS")
     parser.add_argument("--sources", type=Path, default=Path(__file__).with_name("sources.json"), help="فایل تنظیم منابع")
     parser.add_argument("--output", type=Path, default=Path("results"), help="پوشهٔ نتیجه")
     parser.add_argument("--country-db", type=Path, help="فایل محلی CSV.GZ پایگاه DB-IP Country Lite")
-    parser.add_argument("--limit", type=int, default=0, help="سقف اختیاری نامزدهای تست؛ پیش‌فرض ۰ یعنی همه")
-    parser.add_argument("--workers", type=int, default=DEFAULT_WORKERS, help="تعداد بررسی‌های هم‌زمان")
-    parser.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT, help="حداکثر زمان هر درخواست به ثانیه")
+    parser.add_argument("--limit", type=int, default=0, help="سقف اختیاری خروجی؛ پیش‌فرض ۰ یعنی همه")
     args = parser.parse_args()
-    if args.limit < 0 or not 1 <= args.workers <= 256 or not 1 <= args.timeout <= 60:
-        parser.error("سقف نامزدها نامنفی، تعداد بررسی هم‌زمان ۱ تا ۲۵۶ و مهلت درخواست ۱ تا ۶۰ ثانیه است")
+    if args.limit < 0:
+        parser.error("سقف خروجی باید نامنفی باشد")
     started = datetime.now(timezone.utc)
     try:
         require_curl()
         feeds = load_feeds(args.sources)
-        targets, direct_ips = check_targets(args.timeout)
         database, database_source = load_country_database(started, args.country_db)
-        by_publisher, candidates, collection_stats = collect(feeds, args.output / "all.txt")
+        by_publisher, candidates, collection_stats = collect(feeds)
         selected = select_candidates(by_publisher, candidates, args.limit, started)
-        print(f"بررسی {len(selected):,} از {len(candidates):,} نامزد یکتا", flush=True)
-        checks, failures = check_all(selected, args.workers, args.timeout, database, targets, direct_ips)
-        if not checks:
-            choose_target(targets["https"], args.timeout)
-        publish_snapshot(args.output, checks, {
+        publish_snapshot(args.output, selected, database, {
             "started_at_utc": started.isoformat(timespec="seconds"),
-            "finished_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "collection_mode": "grabber",
             "country_database": {"source": database_source, "credit": "IP Geolocation by DB-IP"},
-            "tested_candidates": len(selected),
-            "tested_endpoints": len({(proxy.host, proxy.port) for proxy in selected}),
-            "probe_failures": dict(failures),
             **collection_stats,
         })
     except (ValueError, OSError, EOFError, KeyError, TypeError, subprocess.SubprocessError) as error:
+        if os.environ.get("GITHUB_ACTIONS") == "true":
+            message = str(error).replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+            print(f"::error::{message}", flush=True)
         parser.exit(1, f"Prox: {error}\n")
-    print(f"{len({check.proxy for check in checks}):,} پروکسی سالم در {args.output} ذخیره شد")
+    print(f"{len(selected):,} آدرس پروکسی در {args.output} ذخیره شد")
 
 
 if __name__ == "__main__":

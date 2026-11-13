@@ -5,7 +5,7 @@
 <h1 align="center" dir="rtl">ProxyAtlas · اطلس پروکسی</h1>
 
 <p align="center" dir="rtl">
-  پروکسی‌های عمومی را از ۲۱۸ فید جمع می‌کنیم، اتصالشان را می‌سنجیم و سالم‌های هر اجرا را با کشور خروجی و زمان پاسخ منتشر می‌کنیم.
+  فهرست پروکسی‌های عمومی را از چندین منبع جمع می‌کنیم و به تفکیک کشور و پروتکل منتشر می‌کنیم.
 </p>
 
 <p align="center" dir="rtl">
@@ -17,8 +17,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/aradava/proxy-atlas/actions/workflows/proxies.yml"><img src="https://github.com/aradava/proxy-atlas/actions/workflows/proxies.yml/badge.svg?branch=main" alt="وضعیت تست کامل"></a>
-  <a href="results/manifest.json"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Faradava%2Fproxy-atlas%2Fmain%2Fresults%2Fmanifest.json&amp;query=%24.working_proxies&amp;label=%D8%B3%D8%A7%D9%84%D9%85%20%D8%AF%D8%B1%20%D8%A2%D8%AE%D8%B1%DB%8C%D9%86%20%D8%A7%D9%86%D8%AA%D8%B4%D8%A7%D8%B1&amp;color=0D9488&amp;labelColor=0B2137&amp;style=flat-square" alt="شمار پروکسی‌های سالم در آخرین انتشار"></a>
+  <a href="https://github.com/aradava/proxy-atlas/actions/workflows/proxies.yml"><img src="https://github.com/aradava/proxy-atlas/actions/workflows/proxies.yml/badge.svg?branch=main" alt="وضعیت گردآوری"></a>
+  <a href="results/manifest.json"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Faradava%2Fproxy-atlas%2Fmain%2Fresults%2Fmanifest.json&amp;query=%24.collected_proxies&amp;label=collected&amp;color=0D9488&amp;labelColor=0B2137&amp;style=flat-square" alt="شمار پروکسی‌های گردآوری‌شده در آخرین انتشار"></a>
 </p>
 
 <div dir="rtl">
@@ -27,30 +27,24 @@
 
 | خروجی | چه چیزی در آن هست؟ |
 | --- | --- |
-| [همهٔ پروکسی‌ها](https://raw.githubusercontent.com/aradava/proxy-atlas/main/results/all.txt) | یک آدرس `protocol://IP:port` در هر سطر، مرتب از کمترین زمان پاسخ |
-| [کشورها](results/countries) | فهرست هر کشور بر اساس IP خروجی یا، اگر در پاسخ نیامده باشد، IP سرور پروکسی |
+| [همهٔ پروکسی‌ها](https://raw.githubusercontent.com/aradava/proxy-atlas/main/results/all.txt) | یک آدرس `protocol://IP:port` در هر سطر |
+| [کشورها](results/countries) | فهرست هر کشور بر اساس IP سرور پروکسی |
 | [پروتکل‌ها](results/protocols) | [HTTP](results/protocols/http.txt) · [HTTPS](results/protocols/https.txt) · [SOCKS4](results/protocols/socks4.txt) · [SOCKS4a](results/protocols/socks4a.txt) · [SOCKS5](results/protocols/socks5.txt) · [SOCKS5h](results/protocols/socks5h.txt) |
-| [حالت‌های اتصال](results/modes) | فهرست‌های جداگانه برای تونل CONNECT، ارسال مستقیم HTTP و تونل SOCKS |
-| [جزئیات هر نتیجه](results/proxies.json) | آدرس، پروتکل، حالت اتصال، IP خروجی در صورت دریافت، مبنای کشور و زمان پاسخ بر حسب میلی‌ثانیه |
-| [گزارش آخرین انتشار](results/manifest.json) | تعداد آدرس و پورت متمایز، تعداد ترکیب‌های پروتکل، سالم‌های تأییدشده در تلاش دوم و دلیل رد شدن آزمون‌ها |
+| [خروجی JSON](results/proxies.json) | آدرس، پروتکل اعلام‌شده و کشور سرور |
+| [گزارش آخرین انتشار](results/manifest.json) | زمان گردآوری، شمار آدرس‌ها، تفکیک کشورها و وضعیت دریافت هر منبع |
 
 ## از فید تا فهرست عمومی
 
-1. **گردآوری از ۷۴ منتشرکننده.** نامزدها را از فایل‌های متنی، JSON، CSV و جدول‌های عمومی می‌خوانیم و با سالم‌های آخرین تست کامل ترکیب می‌کنیم. آدرس، پورت و پروتکل تعیین می‌کنند کدام موارد تکراری‌اند. خطای هر فید در گزارش تست کامل ثبت می‌شود و جمع‌آوری از فیدهای دیگر ادامه پیدا می‌کند. [منابع پروژه](sources.json)
-2. **تقسیم و تست موازی.** GitHub Actions همهٔ نامزدهای یکتا را بین چند رانر تقسیم می‌کند. هر رانر درخواست‌ها را گروهی اجرا می‌کند و اگر یک گروه نیمه‌تمام بماند، فقط درخواست‌های بی‌نتیجه را دوباره می‌فرستد. [گردش‌کار تست](.github/workflows/proxies.yml)
-3. **سنجش روش‌های اتصال.** تست HTTPS از ipify شروع می‌شود. وقتی پروکسی در دسترس باشد و مقصد اول از مسیر آن پاسخ معتبر ندهد، مقصدهای مستقل AWS و Cloudflare هم می‌توانند امتحان شوند. پروکسی HTTP شفاف هم می‌تواند با برگرداندن کد تصادفی همان درخواست از مقصد دوم تأیید شود. در تمام حالت‌ها آدرس و پورت اتصال با آدرس پروکسی تطبیق داده می‌شود. [منطق تست](prox.py)
-4. **ادغام و انتشار.** پس از پایان بخش‌ها، نتیجه‌ها را بر اساس زمان پاسخ منتشر می‌کنیم. اگر مقصد IP خروجی را برنگرداند، فیلد `exit_ip` خالی است و کشور از IP سرور پروکسی تخمین زده می‌شود. هر خروجی به تست همان اجرا متکی است. [فهرست منتشرشده](results/)
+1. **دریافت منابع.** آدرس‌ها از فایل‌های متنی، JSON، CSV و جدول‌های عمومی خوانده می‌شوند. خطای هر فید در گزارش ثبت می‌شود و گردآوری از بقیهٔ منابع ادامه دارد. [منابع پروژه](sources.json)
+2. **حذف تکراری‌ها و دسته‌بندی.** هر ترکیب IP، پورت و پروتکل اعلام‌شده یک‌بار در فهرست می‌آید. کشور با استفاده از IP سرور و پایگاه DB-IP تعیین می‌شود.
+3. **انتشار.** خروجی همان نوبت گردآوری جای فهرست قبلی را می‌گیرد. وضعیت اتصال و تازگی هر آدرس به داده‌های منبع بستگی دارد. [فهرست منتشرشده](results/)
 
-> در یکی از تست‌های کامل ثبت‌شده، **۱۲۶٬۴۸۵ نامزد** بررسی شدند. [گزارش همان تست](https://github.com/aradava/proxy-atlas/blob/4a4805292d7e841c8746b65d5032bb95a26e7186/results/manifest.json)
+## گردآوری هر ۹۰ دقیقه
 
-## تست کامل هر ۹۰ دقیقه
-
-Cloudflare هر ۹۰ دقیقه تست کامل را در GitHub Actions ثبت می‌کند. این گردش‌کار فیدها را دوباره می‌خواند، همهٔ نامزدهای یکتا و سالم‌های آخرین تست را می‌سنجد و نتیجه را در فهرست عمومی منتشر می‌کند. درخواست‌های خودکار و دستی به‌نوبت از یک صف عبور می‌کنند. [گردش‌کار تست کامل](https://github.com/aradava/proxy-atlas/actions/workflows/proxies.yml)
-
-[فهرست مبنا](full-scan/all.txt) سالم‌های آخرین تست کامل را نگه می‌دارد. حتی اگر آدرسی در فیدهای نوبت بعد دیده نشود، از فهرست مبنا وارد تست می‌شود.
+Cloudflare هر ۹۰ دقیقه گردآوری کامل را در GitHub Actions ثبت می‌کند. اجراهای دستی و خودکار به‌نوبت از یک صف عبور می‌کنند. [گردش‌کار گردآوری](https://github.com/aradava/proxy-atlas/actions/workflows/proxies.yml)
 
 ---
 
-سنجش IP خروجی با ipify و تشخیص کشور با دادهٔ DB-IP تحت مجوز CC BY 4.0 انجام می‌شود. کد `ZZ` در فایل‌ها به معنی کشور نامشخص است. [ipify](https://www.ipify.org/) · [DB-IP Country Lite](https://db-ip.com/db/lite.php)
+دادهٔ کشور از DB-IP تحت مجوز CC BY 4.0 می‌آید. کد `ZZ` در فایل‌ها به معنی کشور نامشخص است. [DB-IP Country Lite](https://db-ip.com/db/lite.php)
 
 </div>
