@@ -175,7 +175,7 @@ def download(url, timeout, max_bytes, *, retry=False):
     command = [
         "curl", "--disable", "--silent", "--show-error", "--fail", "--globoff",
         "--max-time", str(timeout), "--connect-timeout", str(min(timeout, 8)),
-        "--max-filesize", str(max_bytes), "--write-out", "\n%{http_code}",
+        "--compressed", "--max-filesize", str(max_bytes), "--write-out", "\n%{http_code}",
         "--proto", "=https", "--proto-redir", "=https", "--location",
         "--max-redirs", "3", "--user-agent", "ProxyAtlas/1.0 (+https://github.com/aradava/proxy-atlas)",
         "--proxy", "",
@@ -203,7 +203,7 @@ def download(url, timeout, max_bytes, *, retry=False):
 
 def fetch_feed(feed):
     try:
-        payload = download(feed.url, 20, MAX_FEED_BYTES, retry=True)
+        payload = download(feed.url, 40, MAX_FEED_BYTES, retry=True)
     except (ValueError, OSError, subprocess.TimeoutExpired) as error:
         detail = "download timed out" if isinstance(error, subprocess.TimeoutExpired) else str(error)
         return feed, [], "download_error", detail
