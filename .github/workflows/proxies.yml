@@ -46,16 +46,25 @@ jobs:
           python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
           import json
           import os
+          from collections import Counter
           from pathlib import Path
 
           data = json.loads((Path(os.environ["RUNNER_TEMP"]) / "prox-results/manifest.json").read_text())
+          feeds = Counter(source["status"] for source in data["sources"])
           print("## فهرست پروکسی‌های گردآوری‌شده")
           print(f"- ترکیب‌های یکتای آدرس، پورت و پروتکل در منابع: {data['discovered_candidates']:,}")
           print(f"- آدرس‌های پروکسی در خروجی: {data['collected_proxies']:,}")
           print(f"- آدرس و پورت متمایز در خروجی: {data['distinct_endpoints']:,}")
-          print(f"- فیدهای خوانده‌شده: {sum(not s['error'] for s in data['sources']):,}")
-          print(f"- خطاهای دریافت فید: {sum(bool(s['error']) for s in data['sources']):,}")
+          print(f"- فیدهای دارای آدرس: {feeds['ok']:,}")
+          print(f"- فیدهای خالی: {feeds['empty']:,}")
+          print(f"- خطاهای دریافت فید: {feeds['download_error']:,}")
+          print(f"- خطاهای خواندن قالب فید: {feeds['parse_error']:,}")
           print(f"- گروه‌های جغرافیایی: {len(data['countries']):,}")
+          failed = [source for source in data["sources"] if source["error"]]
+          if failed:
+              print("\n### جزئیات خطاهای فید")
+              for source in failed:
+                  print(f"- {source['publisher']} — {source['url']} — {source['error']}")
           PY
 
       - name: ذخیرهٔ فهرست قابل دانلود

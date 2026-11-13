@@ -171,34 +171,52 @@ def load_feeds(path):
     return feeds
 
 
-def download(url, timeout, max_bytes):
+def download(url, timeout, max_bytes, *, retry=False):
     command = [
         "curl", "--disable", "--silent", "--show-error", "--fail", "--globoff",
         "--max-time", str(timeout), "--connect-timeout", str(min(timeout, 8)),
         "--max-filesize", str(max_bytes), "--write-out", "\n%{http_code}",
         "--proto", "=https", "--proto-redir", "=https", "--location",
         "--max-redirs", "3", "--user-agent", "ProxyAtlas/1.0 (+https://github.com/aradava/proxy-atlas)",
-        "--proxy", "", "--url", url,
+        "--proxy", "",
     ]
-    response = subprocess.run(
-        command, capture_output=True, timeout=timeout + 3, check=False,
-    )
-    body, _, status = response.stdout.rpartition(b"\n")
-    if response.returncode or status != b"200" or len(body) > max_bytes:
-        status_code = status.decode("ascii", errors="replace") or "?"
-        raise ValueError(f"curl {response.returncode}, HTTP {status_code}")
-    return body
+    if retry:
+        command += ["--retry", "2", "--retry-max-time", str(timeout)]
+    with TemporaryDirectory(prefix="prox-download-") as directory:
+        output = Path(directory) / "feed"
+        response = subprocess.run(
+            [*command, "--output", str(output), "--url", url], capture_output=True,
+            timeout=timeout * (2 if retry else 1) + 3, check=False,
+        )
+        status = response.stdout.strip()
+        if response.returncode or status != b"200":
+            status_code = status.decode("ascii", errors="replace") or "?"
+            raise ValueError(f"curl {response.returncode}, HTTP {status_code}")
+        if not output.exists():
+            return b""
+        with output.open("rb") as file:
+            body = file.read(max_bytes + 1)
+        if len(body) > max_bytes:
+            raise ValueError("Download exceeds the size limit")
+        return body
 
 
 def fetch_feed(feed):
     try:
-        payload = download(feed.url, 20, MAX_FEED_BYTES)
+        payload = download(feed.url, 20, MAX_FEED_BYTES, retry=True)
+    except (ValueError, OSError, subprocess.TimeoutExpired) as error:
+        detail = "download timed out" if isinstance(error, subprocess.TimeoutExpired) else str(error)
+        return feed, [], "download_error", detail
+
+    if feed.format in ("text", "text-with-country") and not payload.decode("utf-8-sig", errors="replace").strip():
+        return feed, [], "empty", None
+    try:
         proxies = list(dict.fromkeys(feed_entries(payload, feed)))
         if not proxies:
             raise ValueError("No public proxy endpoints parsed")
-        return feed, proxies, None
-    except (ValueError, RecursionError, subprocess.TimeoutExpired) as error:
-        return feed, [], str(error) if not isinstance(error, subprocess.TimeoutExpired) else "download timed out"
+    except (ValueError, RecursionError) as error:
+        return feed, [], "parse_error", str(error)
+    return feed, proxies, "ok", None
 
 
 def collect(feeds):
@@ -215,8 +233,8 @@ def collect(feeds):
 
     with ThreadPoolExecutor(max_workers=12) as executor:
         downloaded = [item for batch in executor.map(fetch_batch, batches.values()) for item in batch]
-    for _, (feed, proxies, error) in sorted(downloaded):
-        source_stats.append({**asdict(feed), "candidates": len(proxies), "error": error})
+    for _, (feed, proxies, state, error) in sorted(downloaded):
+        source_stats.append({**asdict(feed), "candidates": len(proxies), "status": state, "error": error})
         by_publisher[feed.publisher].update(dict.fromkeys(proxies))
         status = f"خطا: {error}" if error else f"{len(proxies):,} نامزد"
         print(f"{feed.publisher}: {status} ({feed.url})", flush=True)
