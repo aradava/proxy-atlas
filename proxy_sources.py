@@ -67,6 +67,7 @@ class _ProxyTableParser(HTMLParser):
         self.row = None
         self.cell = None
         self.hidden = None
+        self.in_abbreviation = False
 
     def handle_starttag(self, tag, attrs):
         if tag == "tr":
@@ -75,6 +76,11 @@ class _ProxyTableParser(HTMLParser):
             self.cell = []
         elif tag in ("script", "style"):
             self.hidden = tag
+        elif tag == "abbr" and self.cell is not None and self.encoding == "proxyspider":
+            title = dict(attrs).get("title") or ""
+            if re.fullmatch(r"[0-9a-fA-F:.]{1,45}", title):
+                self.cell.append(title)
+                self.in_abbreviation = True
         elif tag == "span" and self.cell is not None and self.encoding == "proxyverity":
             attributes = dict(attrs)
             if "pv-ip-slot" in (attributes.get("class") or "").split():
@@ -88,9 +94,12 @@ class _ProxyTableParser(HTMLParser):
     def handle_endtag(self, tag):
         if tag == self.hidden:
             self.hidden = None
+        elif tag == "abbr":
+            self.in_abbreviation = False
         elif tag in ("td", "th") and self.cell is not None and self.row is not None:
             self.row.append(" ".join(self.cell).strip())
             self.cell = None
+            self.in_abbreviation = False
         elif tag == "tr" and self.row is not None:
             self.rows.append(self.row)
             self.row = self.cell = None
@@ -98,7 +107,7 @@ class _ProxyTableParser(HTMLParser):
             self.rows.append(None)
 
     def handle_data(self, data):
-        if self.cell is not None:
+        if self.cell is not None and not self.in_abbreviation:
             if self.hidden is None:
                 self.cell.append(data)
             elif self.hidden == "script" and self.encoding == "proxynova":

@@ -22,7 +22,7 @@ from proxy_sources import table_entries
 
 
 PROTOCOLS = ("http", "https", "socks4", "socks4a", "socks5", "socks5h")
-TABLE_FORMATS = ("table", "proxynova", "proxyverity")
+TABLE_FORMATS = ("table", "proxynova", "proxyspider", "proxyverity")
 PROTOCOL_LABEL = re.compile(r"\b(?:https?|socks4a?|socks5h?)\b", re.IGNORECASE | re.ASCII)
 COUNTRY_CODE = re.compile(r"[A-Z]{2}")
 ENDPOINT = re.compile(

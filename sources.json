@@ -544,14 +544,14 @@
     "publisher": "Proxy Spider",
     "homepage": "https://proxy-spider.com/",
     "feeds": [
-      {"url": "https://proxy-spider.com/proxies/locations/ir-iran-islamic-republic-of", "protocol": "http", "format": "table"},
-      {"url": "https://proxy-spider.com/proxies/locations/us-united-states", "protocol": "http", "format": "table"},
-      {"url": "https://proxy-spider.com/proxies/locations/cn-china", "protocol": "http", "format": "table"},
-      {"url": "https://proxy-spider.com/proxies/locations/ru-russian", "protocol": "http", "format": "table"},
-      {"url": "https://proxy-spider.com/proxies/locations/de-germany", "protocol": "http", "format": "table"},
-      {"url": "https://proxy-spider.com/proxies/locations/in-india", "protocol": "http", "format": "table"},
-      {"url": "https://proxy-spider.com/proxies/locations/au-australia", "protocol": "http", "format": "table"},
-      {"url": "https://proxy-spider.com/proxies/locations/id-indonesia", "protocol": "http", "format": "table"}
+      {"url": "https://proxy-spider.com/proxies/locations/ir-iran-islamic-republic-of", "protocol": "http", "format": "proxyspider"},
+      {"url": "https://proxy-spider.com/proxies/locations/us-united-states", "protocol": "http", "format": "proxyspider"},
+      {"url": "https://proxy-spider.com/proxies/locations/cn-china", "protocol": "http", "format": "proxyspider"},
+      {"url": "https://proxy-spider.com/proxies/locations/ru-russian", "protocol": "http", "format": "proxyspider"},
+      {"url": "https://proxy-spider.com/proxies/locations/de-germany", "protocol": "http", "format": "proxyspider"},
+      {"url": "https://proxy-spider.com/proxies/locations/in-india", "protocol": "http", "format": "proxyspider"},
+      {"url": "https://proxy-spider.com/proxies/locations/au-australia", "protocol": "http", "format": "proxyspider"},
+      {"url": "https://proxy-spider.com/proxies/locations/id-indonesia", "protocol": "http", "format": "proxyspider"}
     ]
   },
   {
