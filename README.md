@@ -41,7 +41,7 @@
 
 ## گردآوری هر ۱۵ دقیقه
 
-زمان‌بند GitHub Actions به‌طور پیش‌فرض هر ۱۵ دقیقه گردآوری را شروع می‌کند. اجراهای دستی و خودکار به‌نوبت از یک صف عبور می‌کنند. [گردش‌کار گردآوری](https://github.com/aradava/proxy-atlas/actions/workflows/proxies.yml)
+زمان‌بند Cloudflare هر ۱۵ دقیقه درخواست گردآوری را به GitHub Actions می‌فرستد. اجراهای دستی و خودکار به‌نوبت از یک صف عبور می‌کنند. [گردش‌کار گردآوری](https://github.com/aradava/proxy-atlas/actions/workflows/proxies.yml)
 
 ---
 

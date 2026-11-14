@@ -2,13 +2,13 @@
 
 # زمان‌بند Cloudflare برای ProxyAtlas
 
-زمان‌بند پیش‌فرض پروژه GitHub Actions است. برای استفاده از Cloudflare، Worker را با Cron پانزده‌دقیقه‌ای راه‌اندازی کنید و متغیر `PROXY_SCHEDULER` را تنظیم کنید. هر اجرا همهٔ فیدها را با `limit=0` می‌خواند و فهرست را بدون تست اتصال منتشر می‌کند.
+Worker هر ۱۵ دقیقه اجرای گردش‌کار GitHub Actions را درخواست می‌کند. هر اجرا همهٔ فیدها را با `limit=0` می‌خواند و فهرست را بدون تست اتصال منتشر می‌کند.
 
 ## به‌روزرسانی Worker موجود از داشبورد
 
 1. در **Edit code** محتوای کامل [worker.mjs](worker.mjs) را جایگزین کنید و **Deploy** بزنید.
 2. در **Settings → Trigger Events → Cron Triggers** زمان‌بندی‌های قبلی را حذف کنید و `6,21,36,51 * * * *` را اضافه کنید. Cloudflare هر ساعت در دقیقه‌های ۰۶، ۲۱، ۳۶ و ۵۱ به وقت UTC اجرا می‌شود. [مستندات Cron](https://developers.cloudflare.com/workers/configuration/cron-triggers/)
-3. در GitHub به **Settings → Secrets and variables → Actions → Variables** بروید و متغیر مخزن `PROXY_SCHEDULER` را با مقدار `cloudflare` بسازید تا فقط زمان‌بند Cloudflare گردآوری خودکار را شروع کند. بعد از نوبت بعدی، اجرای **گردآوری پروکسی‌ها · Cloudflare** را در [GitHub Actions](https://github.com/aradava/proxy-atlas/actions/workflows/proxies.yml) بررسی کنید.
+3. بعد از نوبت بعدی، اجرای **گردآوری پروکسی‌ها · Cloudflare** را در [GitHub Actions](https://github.com/aradava/proxy-atlas/actions/workflows/proxies.yml) بررسی کنید.
 
 ## گردآوری دستی از مرورگر
 
@@ -34,6 +34,6 @@ npx wrangler@4.160.0 deploy --config scheduler/wrangler.toml
 
 <div dir="rtl">
 
-3. متغیر مخزن `PROXY_SCHEDULER` را در GitHub با مقدار `cloudflare` تنظیم کنید و اجرای بعدی را در [GitHub Actions](https://github.com/aradava/proxy-atlas/actions/workflows/proxies.yml) بررسی کنید. ثبت تغییرات Cron در Cloudflare ممکن است تا ۱۵ دقیقه طول بکشد. [Cron Triggers](https://developers.cloudflare.com/workers/configuration/cron-triggers/)
+3. اجرای بعدی را در [GitHub Actions](https://github.com/aradava/proxy-atlas/actions/workflows/proxies.yml) بررسی کنید. ثبت تغییرات Cron در Cloudflare ممکن است تا ۱۵ دقیقه طول بکشد. [Cron Triggers](https://developers.cloudflare.com/workers/configuration/cron-triggers/)
 
 </div>

@@ -1,5 +1,5 @@
 name: گردآوری پروکسی‌ها · هر ۱۵ دقیقه
-run-name: ${{ inputs.automation && 'گردآوری پروکسی‌ها · Cloudflare' || github.event_name == 'schedule' && 'گردآوری پروکسی‌ها · GitHub' || 'به‌روزرسانی فهرست پروکسی‌ها' }}
+run-name: ${{ inputs.automation && 'گردآوری پروکسی‌ها · Cloudflare' || 'به‌روزرسانی فهرست پروکسی‌ها' }}
 
 on:
   push:
@@ -7,8 +7,6 @@ on:
     paths:
       - .github/workflows/proxies.yml
       - sources.json
-  schedule:
-    - cron: '6,21,36,51 * * * *'
   workflow_dispatch:
     inputs:
       limit:
@@ -33,9 +31,6 @@ concurrency:
 
 jobs:
   collect:
-    if: >-
-      (github.event_name != 'schedule' || vars.PROXY_SCHEDULER != 'cloudflare') &&
-      (!inputs.automation || vars.PROXY_SCHEDULER == 'cloudflare')
     name: گردآوری و دسته‌بندی پروکسی‌ها
     runs-on: ubuntu-24.04
     timeout-minutes: 15
