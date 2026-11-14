@@ -34,7 +34,7 @@ func main() {
 	input := flag.String("input", "", "TXT file containing public proxy URLs")
 	output := flag.String("output", "", "TXT output path for working proxies")
 	threads := flag.Int("threads", 500, "simultaneous checks")
-	timeout := flag.Int("timeout-ms", 6000, "timeout for each proxy")
+	timeout := flag.Int("timeout-ms", 10000, "timeout for each proxy")
 	flag.Parse()
 	if err := run(*input, *output, *threads, *timeout); err != nil {
 		fmt.Fprintln(os.Stderr, err)

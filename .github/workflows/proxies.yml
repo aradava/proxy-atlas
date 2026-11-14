@@ -141,7 +141,7 @@ jobs:
           mkdir -p "$output"
           chmod +x "$RUNNER_TEMP/engine/atlas-check"
           "$RUNNER_TEMP/engine/atlas-check" -input "$RUNNER_TEMP/prox-plan/batch-$BATCH.txt" \
-            -output "$output/working-$BATCH.txt" -threads 500 -timeout-ms 6000 \
+            -output "$output/working-$BATCH.txt" -threads 500 -timeout-ms 10000 \
             | tee "$output/stats-$BATCH.json"
 
       - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
