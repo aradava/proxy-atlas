@@ -1,10 +1,7 @@
 const repository = "aradava/proxy-atlas";
 const workflowFile = "proxies.yml";
 const workflowUrl = `https://github.com/${repository}/actions/workflows/${workflowFile}`;
-const schedules = new Set([
-  "6 */3 * * *",
-  "36 1-23/3 * * *",
-]);
+const schedule = "6,21,36,51 * * * *";
 
 const responseHeaders = {
   "Cache-Control": "no-store",
@@ -43,7 +40,7 @@ export default {
   },
 
   async scheduled(controller, env) {
-    if (!schedules.has(controller.cron)) {
+    if (controller.cron !== schedule) {
       console.warn(`Ignored cron trigger: ${controller.cron}`);
       return;
     }
@@ -272,7 +269,7 @@ function dashboard(nonce, manualEnabled) {
     <main class="panel">
       <div class="intro">
         <h1>گردآوری دستی پروکسی‌ها</h1>
-        <p>گردآوری خودکار هر ۹۰ دقیقه در صف GitHub ثبت می‌شود. از این صفحه می‌توانی همان گردآوری را دستی شروع کنی.</p>
+        <p>از این صفحه می‌توانی گردآوری فیدها و انتشار فهرست بدون تست اتصال را دستی شروع کنی.</p>
       </div>
       <form id="collection-form" method="post" action="/run" autocomplete="off">
         <fieldset id="controls"${manualEnabled ? "" : " disabled"}>

@@ -1,5 +1,5 @@
-name: گردآوری و تست پروکسی‌ها · هر ۹۰ دقیقه
-run-name: ${{ inputs.automation && 'گردآوری و تست · Cloudflare' || 'به‌روزرسانی فهرست پروکسی‌ها' }}
+name: گردآوری پروکسی‌ها · هر ۱۵ دقیقه
+run-name: ${{ inputs.automation && 'گردآوری پروکسی‌ها · Cloudflare' || github.event_name == 'schedule' && 'گردآوری پروکسی‌ها · GitHub' || 'به‌روزرسانی فهرست پروکسی‌ها' }}
 
 on:
   push:
@@ -7,10 +7,12 @@ on:
     paths:
       - .github/workflows/proxies.yml
       - sources.json
+  schedule:
+    - cron: '6,21,36,51 * * * *'
   workflow_dispatch:
     inputs:
       limit:
-        description: سقف نمونهٔ آزمایشی (۰ یعنی تست همه)
+        description: سقف اختیاری خروجی (۰ یعنی همه)
         type: number
         default: 0
       publish:
@@ -31,160 +33,57 @@ concurrency:
 
 jobs:
   collect:
-    name: گردآوری نامزدها از همهٔ فیدها
+    if: >-
+      (github.event_name != 'schedule' || vars.PROXY_SCHEDULER != 'cloudflare') &&
+      (!inputs.automation || vars.PROXY_SCHEDULER == 'cloudflare')
+    name: گردآوری و دسته‌بندی پروکسی‌ها
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
       contents: read
-    outputs:
-      batches: ${{ steps.plan.outputs.batches }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           sparse-checkout: |
             /prox.py
             /proxy_sources.py
             /sources.json
-            /check_pipeline.py
           sparse-checkout-cone-mode: false
 
-      - name: دریافت فیدها و تقسیم نامزدها
-        id: plan
+      - name: دریافت فیدها و ساخت فهرست
         env:
           PROXY_LIMIT: ${{ fromJSON(format('{0}', inputs.limit || 0)) }}
-        run: python3 check_pipeline.py prepare "$RUNNER_TEMP/prox-plan" --limit "$PROXY_LIMIT" --github-output "$GITHUB_OUTPUT"
+        run: python3 prox.py --output "$RUNNER_TEMP/prox-results" --limit "$PROXY_LIMIT"
 
-      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
-        with:
-          name: proxy-plan
-          path: ${{ runner.temp }}/prox-plan/
-          if-no-files-found: error
-          retention-days: 3
-          overwrite: true
-
-  build:
-    name: ساخت موتور رسمی ProxyScrape
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with:
-          persist-credentials: false
-          sparse-checkout: |
-            /checker/proxyscrape.go
-          sparse-checkout-cone-mode: false
-
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with:
-          repository: ProxyScrape/proxyscrape-proxy-checker
-          ref: f0fb0fad29c989b012626de67a3b83abc722f4c6
-          path: upstream
-          persist-credentials: false
-          sparse-checkout: backend
-
-      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
-        with:
-          go-version: '1.26.2'
-          cache: false
-
-      - name: ساخت فایل اجرایی لینوکس
-        env:
-          CGO_ENABLED: '0'
-          GOTOOLCHAIN: local
+      - name: خلاصهٔ گردآوری
         run: |
-          set -euo pipefail
-          mkdir -p upstream/backend/cmd/atlas-check "$RUNNER_TEMP/engine"
-          cp checker/proxyscrape.go upstream/backend/cmd/atlas-check/main.go
-          cd upstream/backend
-          go build -tags webserver -mod=vendor -o "$RUNNER_TEMP/engine/atlas-check" ./cmd/atlas-check
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          import os
+          from collections import Counter
+          from pathlib import Path
 
-      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
-        with:
-          name: proxy-engine
-          path: ${{ runner.temp }}/engine/atlas-check
-          if-no-files-found: error
-          retention-days: 3
-          overwrite: true
+          data = json.loads((Path(os.environ["RUNNER_TEMP"]) / "prox-results/manifest.json").read_text())
+          feeds = Counter(source["status"] for source in data["sources"])
+          print("## فهرست پروکسی‌های گردآوری‌شده")
+          print(f"- ترکیب‌های یکتای آدرس، پورت و پروتکل در منابع: {data['discovered_candidates']:,}")
+          print(f"- آدرس‌های پروکسی در خروجی: {data['collected_proxies']:,}")
+          print(f"- آدرس و پورت متمایز در خروجی: {data['distinct_endpoints']:,}")
+          print(f"- فیدهای دارای آدرس: {feeds['ok']:,}")
+          print(f"- فیدهای خالی: {feeds['empty']:,}")
+          print(f"- خطاهای دریافت فید: {feeds['download_error']:,}")
+          print(f"- خطاهای خواندن قالب فید: {feeds['parse_error']:,}")
+          print(f"- گروه‌های جغرافیایی: {len(data['countries']):,}")
+          failed = [source for source in data["sources"] if source["error"]]
+          if failed:
+              print("\n### جزئیات خطاهای فید")
+              for source in failed:
+                  print(f"- {source['publisher']} — {source['url']} — {source['error']}")
+          PY
 
-  check:
-    name: تست بستهٔ ${{ matrix.batch }}
-    needs: [collect, build]
-    runs-on: ubuntu-24.04
-    timeout-minutes: 32
-    permissions:
-      contents: read
-    strategy:
-      fail-fast: false
-      max-parallel: 20
-      matrix:
-        batch: ${{ fromJSON(needs.collect.outputs.batches) }}
-    steps:
-      - uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3
-        with:
-          name: proxy-plan
-          path: ${{ runner.temp }}/prox-plan
-
-      - uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3
-        with:
-          name: proxy-engine
-          path: ${{ runner.temp }}/engine
-
-      - name: تست اتصال با ۵۰۰ کار هم‌زمان
-        env:
-          BATCH: ${{ matrix.batch }}
-        run: |
-          set -euo pipefail
-          output="$RUNNER_TEMP/prox-report"
-          mkdir -p "$output"
-          chmod +x "$RUNNER_TEMP/engine/atlas-check"
-          "$RUNNER_TEMP/engine/atlas-check" -input "$RUNNER_TEMP/prox-plan/batch-$BATCH.txt" \
-            -output "$output/working-$BATCH.txt" -threads 500 -timeout-ms 10000 \
-            | tee "$output/stats-$BATCH.json"
-
-      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
-        with:
-          name: proxy-check-${{ matrix.batch }}
-          path: ${{ runner.temp }}/prox-report/
-          if-no-files-found: error
-          retention-days: 3
-          overwrite: true
-
-  merge:
-    name: ساخت فهرست پروکسی‌های تأییدشده
-    needs: check
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with:
-          persist-credentials: false
-          sparse-checkout: |
-            /prox.py
-            /proxy_sources.py
-            /check_pipeline.py
-          sparse-checkout-cone-mode: false
-
-      - uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3
-        with:
-          name: proxy-plan
-          path: ${{ runner.temp }}/prox-plan
-
-      - uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3
-        with:
-          pattern: proxy-check-*
-          merge-multiple: true
-          path: ${{ runner.temp }}/prox-reports
-
-      - name: اعتبارسنجی بسته‌ها و ادغام سالم‌ها
-        run: |
-          python3 check_pipeline.py merge "$RUNNER_TEMP/prox-plan" "$RUNNER_TEMP/prox-reports" "$RUNNER_TEMP/prox-results"
-
-      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+      - name: ذخیرهٔ فهرست قابل دانلود
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: proxy-results
           path: ${{ runner.temp }}/prox-results/
@@ -194,8 +93,10 @@ jobs:
 
   publish:
     name: ثبت فهرست در مخزن
-    needs: merge
-    if: github.ref_name == github.event.repository.default_branch && (github.event_name == 'push' || (inputs.publish && inputs.limit == 0))
+    needs: collect
+    if: >-
+      github.ref_name == github.event.repository.default_branch &&
+      (github.event_name != 'workflow_dispatch' || (inputs.publish && inputs.limit == 0))
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
@@ -222,12 +123,8 @@ jobs:
 
           incoming = Path(os.environ["RUNNER_TEMP"]) / "prox-results"
           manifest = json.loads((incoming / "manifest.json").read_text())
-          if (
-              manifest["collection_mode"] != "verified"
-              or manifest["tested_candidates"] != manifest["discovered_candidates"]
-              or not (incoming / "all.txt").stat().st_size
-          ):
-              raise SystemExit("Invalid or empty verified output")
+          if manifest["collection_mode"] != "grabber" or not (incoming / "all.txt").stat().st_size:
+              raise SystemExit("Invalid or empty grabber output")
 
           published = Path("results/manifest.json")
           if published.is_file():
@@ -246,5 +143,5 @@ jobs:
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'Update verified proxy lists'
+          git commit -m 'Update collected proxy lists'
           git push origin "HEAD:refs/heads/$RESULT_BRANCH"

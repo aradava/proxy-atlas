@@ -2,15 +2,13 @@
 
 # زمان‌بند Cloudflare برای ProxyAtlas
 
-Worker هر ۹۰ دقیقه یک گردآوری کامل با `limit=0` در GitHub Actions ثبت می‌کند. اجرای دستی از همان گردش‌کار و صف استفاده می‌کند.
+زمان‌بند پیش‌فرض پروژه GitHub Actions است. برای استفاده از Cloudflare، Worker را با Cron پانزده‌دقیقه‌ای راه‌اندازی کنید و متغیر `PROXY_SCHEDULER` را تنظیم کنید. هر اجرا همهٔ فیدها را با `limit=0` می‌خواند و فهرست را بدون تست اتصال منتشر می‌کند.
 
 ## به‌روزرسانی Worker موجود از داشبورد
 
 1. در **Edit code** محتوای کامل [worker.mjs](worker.mjs) را جایگزین کنید و **Deploy** بزنید.
-2. در **Settings → Trigger Events → Cron Triggers** زمان‌بندی‌های قبلی را حذف کنید و این دو عبارت را جداگانه اضافه کنید.
-   - `6 */3 * * *`
-   - `36 1-23/3 * * *`
-3. Cloudflare ساعت‌های Cron را با UTC می‌خواند. این دو عبارت با هم به‌ترتیب ساعت‌های ۰۰:۰۶، ۰۱:۳۶، ۰۳:۰۶ و به همین شکل تا پایان روز را پوشش می‌دهند. بعد از نوبت بعدی، اجرای **گردآوری پروکسی‌ها · Cloudflare** را در [GitHub Actions](https://github.com/aradava/proxy-atlas/actions/workflows/proxies.yml) بررسی کنید. [مستندات Cron](https://developers.cloudflare.com/workers/configuration/cron-triggers/)
+2. در **Settings → Trigger Events → Cron Triggers** زمان‌بندی‌های قبلی را حذف کنید و `6,21,36,51 * * * *` را اضافه کنید. Cloudflare هر ساعت در دقیقه‌های ۰۶، ۲۱، ۳۶ و ۵۱ به وقت UTC اجرا می‌شود. [مستندات Cron](https://developers.cloudflare.com/workers/configuration/cron-triggers/)
+3. در GitHub به **Settings → Secrets and variables → Actions → Variables** بروید و متغیر مخزن `PROXY_SCHEDULER` را با مقدار `cloudflare` بسازید تا فقط زمان‌بند Cloudflare گردآوری خودکار را شروع کند. بعد از نوبت بعدی، اجرای **گردآوری پروکسی‌ها · Cloudflare** را در [GitHub Actions](https://github.com/aradava/proxy-atlas/actions/workflows/proxies.yml) بررسی کنید.
 
 ## گردآوری دستی از مرورگر
 
@@ -36,6 +34,6 @@ npx wrangler@4.160.0 deploy --config scheduler/wrangler.toml
 
 <div dir="rtl">
 
-3. بعد از نوبت بعدی، اجرای **گردآوری پروکسی‌ها · Cloudflare** را در [GitHub Actions](https://github.com/aradava/proxy-atlas/actions/workflows/proxies.yml) بررسی کنید. ثبت تغییرات Cron در Cloudflare ممکن است تا ۱۵ دقیقه طول بکشد. [Cron Triggers](https://developers.cloudflare.com/workers/configuration/cron-triggers/)
+3. متغیر مخزن `PROXY_SCHEDULER` را در GitHub با مقدار `cloudflare` تنظیم کنید و اجرای بعدی را در [GitHub Actions](https://github.com/aradava/proxy-atlas/actions/workflows/proxies.yml) بررسی کنید. ثبت تغییرات Cron در Cloudflare ممکن است تا ۱۵ دقیقه طول بکشد. [Cron Triggers](https://developers.cloudflare.com/workers/configuration/cron-triggers/)
 
 </div>
